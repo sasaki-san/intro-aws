@@ -1,0 +1,10 @@
+= AWSによるクラウド入門
+Tomoyuki Mano <tomoyukimano@gmail.com>
+v1.0, May 2020
+:toc:
+:sectnums:
+:source-highlighter: rouge
+:table-caption!:
+:icons: font
+
+include::introduction.adoc[]
