@@ -2,3 +2,150 @@
 
 === AWSとは？
 
+本講義では，クラウドの実践を行うプラットフォームとして，AWSを使う．
+
+AWS (Amazon Web Service) はAmazon社が提供する総合的なクラウドプラットフォームである．
+
+AWSはAmazonが持つ膨大な計算リソースを貸し出すクラウドサービスとして，2006年に誕生した．現在では，クラウドプロバイダーとして最大のマーケットシェア(約33%)を保持している(ソース: https://www.canalys.com/newsroom/cloud-market-share-q4-2018-and-full-year-2018[Market report by canalys])．Netflix, Expediaをはじめとした多くのウェブ関連のサービスで，一部または全てのサーバーリソースがAWSから提供されているとのことである．よって，知らないうちにAWSの恩恵にあずかっている人も少なくないはずだ．
+
+最大のシェアをもつだけに，とても幅広い機能・サービスが提供されており，科学・エンジニアリングの研究用途としても頻繁に用いられるようになってきている．
+
+=== AWSの機能・サービス
+
+下の図は，執筆時点においてAWSで提供されている主要な機能・サービスの一覧である．
+
+.AWSで提供されている主要なサービス一覧
+image::imgs/aws_services.png[AWS services, 350, align="center"]
+
+計算，ストレージ，データベース，ネットワーク，セキュリティなど，クラウドの構築に必要な様々な要素が**独立したコンポーネント**として提供されている．基本的に，これらを組み合わせることでひとつのクラウドができあがる．
+
+また，機械学習・音声認識・AR/VRなど，特定のアプリケーションにパッケージ済みのサービスも提供されている．これらを合計すると全部で176個のサービスが提供されているとのことである(https://dev.classmethod.jp/articles/aws-summary-2020/[出典])．
+
+AWSの初心者は，この大量のサービスの数に圧倒され，どこから手をつけたらよいのかわからなくなる，という状況に陥りがちである．だが実のところ，基本的な構成要素はそのうちの数個のみに限られる．他の機能の多くは，基本の要素を組み合わせ，特定のアプリケーションとしてAWSがパッケージとして用意したものである．なので，基本要素となる機能の使い方を知れば，AWSのおおよそのリソースを使いこなすことが可能になる．
+
+=== AWSでクラウドを作るときの基本となる部品
+
+==== 計算
+
+EC2 (Elastic Compute Cloud)::
+様々なスペックの仮想マシンを作成し，計算を実行することができる．科学計算では，おそらくこれをメインで使うことになる．
+
+Lambda::
+Function as a Service (FaaS)と呼ばれる，小さな計算を**サーバーなし**で実行するためのサービス．Serverless architecutre の章で詳しく解説する．
+
+==== ストレージ
+
+EFS (Elastic File System)::
+NFS(Network file system)による分散ファイルシステム．いわゆる"普通の"(スラッシュ `/` でパスが連結された)ファイルシステムを思い浮かべてくれたらよい．
+
+S3 (Simple Storage Service)::
+Object Storage と呼ばれる，通常のファイルシステムの機能に加えてバージョン管理などの機能が付与されている．Serverless architecutre の章で詳しく解説する．
+
+==== データベース
+
+DynamoDB::
+NoSQL型のデータベースサービス(知っている人は `mongoDB` なんかを思い浮かべたらよい)．Serverless architecutre の章で詳しく解説する．
+
+==== ネットワーク
+
+VPC(Virtual Private Cloud)::
+AWS上に仮想ネットワーク環境を作成し，外部からのアクセスなどを管理する．EC2はVPCの内部に配置されなければならない．
+
+=== Region と Availability Zone
+
+
+
+=== AWSでのクラウドの開発
+
+AWSクラウドの全体の概要がわかってきたところで，次のトピックとして，どのようにしてAWS上にクラウドの開発を行い，展開していくかについての概略を解説をしよう．
+
+AWSのリソースを追加・編集・削除などの操作を実行するには，**コンソールを用いる**方法と，**APIを用いる方法**の，二つの経路がある．
+
+==== コンソール画面からリソースを操作する
+
+AWSのアカウントにログインすると，まず最初に表示されるのが**AWSコンソール**である．
+
+.AWSマネージメントコンソール画面
+image::imgs/aws_console.png[AWS console, 400, align="center"]
+
+コンソールを使うことで，EC2のインスタンスを立ち上げたり，S3のデータを追加・削除したり，ログを閲覧したりなど，あらゆるAWS上のあらゆるリソースの操作をGUI (Graphical User Interface) を使って実行することができる．初めて触る機能をポチポチと試したり，デバッグを行うときなどにとても便利である．
+
+コンソールはさらっと機能を試すくらいの使用には便利なのであるが，実際にクラウドの開発をする場面でこれを直接いじることはあまりない．むしろ，次に紹介するAPIを使用して，プログラムとしてクラウドのリソースを記述することで開発を行うのが一般的である．
+
+そのような理由で，本講義ではAWSコンソールを使ったAWSの使い方はあまり触れない．AWSのドキュメンテーションには，たくさんの
+https://aws.amazon.com/getting-started/hands-on/[チュートリアル]
+が用意されており，コンソール画面から様々な操作を行う方法が記述されているので，興味がある読者はそちらを参照されたい．
+
+==== APIからリソースを操作する
+
+API(Application Programming Interface)を使うことで，コマンドをAWSに送信し，クラウドのリソースの操作をすることができる．
+
+APIとは，簡単に言えばAWSが公開しているコマンドの一覧であり，`GET`, `POST`, `DELETE` などの **REST API** から構成されている．が，直接REST APIを入力するのは面倒であるので，その手間を解消するための様々なツールが提供されている．
+
+https://docs.aws.amazon.com/cli/latest/index.html[AWS CLI]
+は，UNIXのコンソールからAWS APIを送信するためのCLI (Command Line Interface) である．
+
+CLIに加えて，いろいろなプログラミング言語でのSDKが提供されている．
+
+* Python => https://boto3.amazonaws.com/v1/documentation/api/latest/index.html[boto3]
+* Ruby => https://aws.amazon.com/sdk-for-ruby/[AWS SDK for Ruby]
+* node.js => https://aws.amazon.com/sdk-for-node-js/[AWS SDK for Node.js]
+
+具体的なAPIの使用例をあげよう．
+
+S3に新しいバケット(データ管理の単位)を追加したいとしよう．AWS CLIを使った場合は，以下のようなコマンドを打てばよい．
+
+[source,bash]
+----
+$ aws s3api create-bucket --bucket my-bucket --region ap-northeast-1
+----
+
+上記のコマンドは， `my-bucket` という名前のバケットを， `ap-northeast-1` の地域(region)に作成する．なお，上記のコマンドを実行する前提として，認証鍵を用いたAWSへのログインは済んでいるものとする(ハンズオンにて詳しく解説)．
+
+Pythonから上記と同じ操作を実行するには， `boto3` ライブラリを使って，以下のようなスクリプトを実行する．
+
+[source,python]
+----
+import boto3
+
+s3_client = boto3.client("s3")
+s3_client.create_bucket(Bucket="my-bucket")
+----
+
+もう一つ例をあげよう．
+
+新しいEC2のインスタンス(インスタンスとは，起動状態にある仮想サーバーの意味である)を起動するには，以下のようなコマンドを打てば良い．
+
+[source,bash]
+----
+$ aws ec2 run-instances --image-id ami-xxxxxxxx --count 1 --instance-type t2.micro --key-name MyKeyPair --security-group-ids sg-903004f8 --subnet-id subnet-6e7f829e
+----
+
+上記のコマンドにより，
+https://aws.amazon.com/ec2/instance-types/t2/[t2.micro]
+というタイプ(1CPU, 1.0GB RAM)のインスタンスが起動する．ここではその他のパラメータの詳細の説明は省略する．講義第一回目のハンズオンで詳しく解説を行う．
+
+Pythonから上記と同じ操作を実行するには，以下のようなスクリプトを使う．
+
+[source,python]
+----
+import boto3
+
+ec2_client = boto3.client("ec2")
+ec2_client.run_instances(
+    ImageId="ami-xxxxxxxxx",
+    MinCount=1, 
+	MaxCount=1,
+	KeyName="MyKeyPair",
+	InstanceType="t2.micro",
+    SecurityGroupIds=["sg-903004f8"],
+    SubnetId="subnet-6e7f829e",
+)
+----
+
+以上の具体例を通じて，APIによるクラウドのリソースの操作のイメージがつかめてきただろうか？
+コマンド一つで，新しい仮想サーバーを起動したり，データの保存領域を追加したり，任意の操作を実行することができるわけである．
+基本的に，このようなコマンドを複数組み合わせていくことで，自分の望むCPU・RAM・ネットワーク・ストレージが備わった計算環境をを構築することができる．もちろん，逆の操作(リソースの削除)もAPIを使って実行できる．
+
+=== CloudFormation と AWS CDK
+
