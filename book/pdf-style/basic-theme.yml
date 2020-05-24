@@ -3,13 +3,13 @@ font:
     GenShinGothic-P-Regular:
       normal: GenShinGothic-P-Regular.ttf
       italic: GenShinGothic-P-Regular.ttf
-      bold: GenShinGothic-P-Regular.ttf
-      bold_italic: GenShinGothic-P-Regular.ttf
+      bold: GenShinGothic-P-Bold.ttf
+      bold_italic: GenShinGothic-P-Bold.ttf
     GenShinGothic-Monospace-Regular:
       normal: GenShinGothic-Monospace-Regular.ttf
       italic: GenShinGothic-Monospace-Regular.ttf
-      bold: GenShinGothic-Monospace-Regular.ttf
-      bold_italic: GenShinGothic-Monospace-Regular.ttf
+      bold: GenShinGothic-Monospace-Bold.ttf
+      bold_italic: GenShinGothic-Monospace-Bold.ttf
     # Noto Serif supports Latin, Latin-1 Supplement, Latin Extended-A, Greek, Cyrillic, Vietnamese & an assortment of symbols
     Noto Serif:
       normal: notoserif-regular-subset.ttf
@@ -84,14 +84,14 @@ heading:
   #font_color: 181818
   font_color: $base_font_color
   font_family: $base_font_family
-  font_style: bold
+  font_style: normal
   # h1 is used for part titles
   h1_font_size: floor($base_font_size * 2.6)
   # h2 is used for chapter titles
   h2_font_size: floor($base_font_size * 2.15)
   h3_font_size: round($base_font_size * 1.7)
   h4_font_size: $base_font_size_large
-  h5_font_size: $base_font_size
+  h5_font_size: $base_font_size_large
   h6_font_size: $base_font_size_small
   #line_height: 1.4
   # correct line height for Noto Serif metrics (comes with built-in line height)
@@ -121,7 +121,7 @@ block:
   margin_top: 0
   margin_bottom: $vertical_rhythm
 caption:
-  align: left
+  align: center
   font_style: italic
   # FIXME perhaps set line_height instead of / in addition to margins?
   margin_inside: $vertical_rhythm / 3
