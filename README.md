@@ -7,3 +7,7 @@
 - テキスト(HTML版)はこちら https://tomomano.gitlab.io/intro-aws/
 - テキスト(PDF版)はこちら [book.pdf](book.pdf)
 - ハンズオンで使用するプログラム => [tutorial/](tutorial/)
+
+## 更新履歴
+
+- 2020/05/24 - GitLab開設
