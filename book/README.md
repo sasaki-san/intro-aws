@@ -1,11 +1,14 @@
 ## Install
 
-* Install `ruby` and `bundler`
+Prerequisites:
+- `ruby`
+- `bundler`
+
+Install dependent libraries:
 
 ```bash
 bundle install --path vendor/bundle
 ```
-(You need to have ruby and bundler installed on your system)
 
 ## Build the document
 ```bash

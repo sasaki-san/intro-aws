@@ -8,3 +8,6 @@ v1.0, May 2020
 :icons: font
 
 include::introduction.adoc[]
+include::cloud.adoc[]
+include::author.adoc[]
+include::license.adoc[]
