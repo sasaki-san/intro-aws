@@ -53,14 +53,15 @@ https://docs.docker.com/docker-for-windows/install-windows-home/[こちらのド
 
 本講義のハンズオンを実行するにあたり，個人のAWSアカウントの取得が必要である．
 
-https://aws.amazon.com/education/awseducate/[AWS Educate]
-を介してアカウントを作成すれば，$35分の利用クーポンが手に入る．
+AWSには無料利用枠(Free tier)というものがあり，少量の計算であれば無料で行える (https://aws.amazon.com/free/?all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc[詳細])．講義のハンズオンではなるべく無料枠内で完結できるよう努めるが，場合によっては多少のコストが発生する可能性がある点はご承知いただきたい．
 
-AWSには無料利用枠があり，講義のハンズオンではなるべく無料枠内で利用できるよう努めるが，多少のコストが発生する可能性がある点はご承知いただきたい．
+また，
+https://aws.amazon.com/education/awseducate/[AWS Educate]
+を介してアカウントを作成すれば，$30分の利用クーポンが手に入るので(2020/05時点)，ぜひ利用していただきたい．
 
 [NOTE]
 ====
-AWS Educate の登録の際にはECCSのメールアドレス(`g.ecc.u-tokyo.ac.jp`)を使用する．
+AWS Educate の登録手順についてはAppendixに記載してある．
 ====
 
 === 講義に関連する資料
@@ -80,4 +81,3 @@ https://gitlab.com/tomomano/intro-aws
 
 また，クラウドというのは様々な情報技術の総体である．クラウドのインフラを支える理論について興味がある場合は，ネットワーク・OS・データベースなど，個別のテーマに絞った本を参照することをおすすめする．
 ****
-

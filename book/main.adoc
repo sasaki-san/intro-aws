@@ -11,9 +11,9 @@ v1.0, May 2020
 include::introduction.adoc[]
 include::cloud.adoc[]
 include::aws_get_started.adoc[]
+include::appendix.adoc[]
 include::author.adoc[]
 include::license.adoc[]
-
 
 // Additional styles
 ++++
