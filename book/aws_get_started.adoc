@@ -248,9 +248,44 @@ CloudFormation を記述するには， **JSON** (JavaScript Object Notation) �
 
 前節で紹介した CloudFormation は，見てわかるとおり大変記述が複雑であり，またそれのどれか一つにでも誤りがあってはいけない．また，基本的に"テキスト"を書いていくことになるので，プログラミング言語で使うような便利な変数やクラスといった概念が使えない(厳密には，変数に相当するような機能は存在するのだが)．そのようなわけで，実際にCloudFormation 職人と呼ばれる専門のプロが存在するくらいである．一方，記述の多くの部分は繰り返しが多く，自動化できる部分も多い．
 
-そのような悩みを解決してくれるのが， https://aws.amazon.com/cdk/[AWS Cloud Development Kit (CDK)] である．CDKは Python などのプログラミング言語を使って CloudFormation を自動的に生成してくれるツールである．CDK は2019年にリリースされたばかりの比較的新しいツールで，日々改良が進められている (https://github.com/aws/aws-cdk/releases[GitHub] のソースのリリースを見ればその開発のスピードの速さがわかるだろう)．
+そのような悩みを解決してくれるのが， https://aws.amazon.com/cdk/[AWS Cloud Development Kit (CDK)] である．CDKは Python などのプログラミング言語を使って CloudFormation を自動的に生成してくれるツールである．CDK は2019年にリリースされたばかりの比較的新しいツールで，日々改良が進められている (https://github.com/aws/aws-cdk/releases[GitHub] のソースのリリースを見ればその開発のスピードの速さがわかるだろう)．CDK は TypeScript (JavaScript), Python, Java など複数の言語でサポートされている．
 
 CDKを使うことで，CloudFormation に相当するリソースの記述を，より親しみのあるプログラミング言語を使って行うことができる．かつ，典型的なリソース操作に関してはパラメータの多くの部分を自動で決定してくれるので，記述しなければならない量もかなり削減される．
+
+以下に Python を使った CDK のコードの一例(抜粋)を示す．
+
+[source, python]
+----
+from aws_cdk import (
+    core,
+    aws_ec2 as ec2,
+)
+
+class MyFirstEc2(core.Stack):
+
+    def __init__(self, scope, name, **kwargs):
+        super().__init__(scope, name, **kwargs)
+
+        vpc = ec2.Vpc(
+            ... # some parameters
+        )
+
+        sg = ec2.SecurityGroup(
+            ... # some parameters
+        )
+
+        host = ec2.Instance(
+            self, "MyGreatEc2",
+            instance_type=ec2.InstanceType("t2.micro"),
+            machine_image=ec2.MachineImage.latest_amazon_linux(),
+            vpc=vpc,
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
+            security_group=sg,
+            ...
+        )
+----
+
+上記のようなコードから，CloudFormationファイルを自動生成することができる．とても煩雑だったCloudFormationファイルに比べて，Python を使うことで格段に短く，わかりやすく記述できることができるのがわかるだろう．
 
 本講義では，ハンズオンでCDKを使ってクラウド開発の体験をしてもらう．
 
