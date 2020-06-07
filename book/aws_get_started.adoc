@@ -28,28 +28,34 @@ AWSの初心者は，この大量のサービスの数に圧倒され，どこ�
 
 ==== 計算
 
-EC2 (Elastic Compute Cloud)::
+image:imgs/aws_logos/EC2.png[S3, 40, role="left"]
+**EC2 (Elastic Compute Cloud)**
 様々なスペックの仮想マシンを作成し，計算を実行することができる．科学計算では，おそらくこれをメインで使うことになる．
 
-Lambda::
+image:imgs/aws_logos/Lambda.png[S3, 40, role="left"]
+**Lambda**
 Function as a Service (FaaS)と呼ばれる，小さな計算を**サーバーなし**で実行するためのサービス．Serverless architecutre の章で詳しく解説する．
 
 ==== ストレージ
 
-EFS (Elastic File System)::
-NFS(Network file system)による分散ファイルシステム．いわゆる"普通の"(一般的なOSで使われている)ファイルシステムを思い浮かべてくれたらよい．
+image:imgs/aws_logos/EBS.png[S3, 40, role="left"]
+**EBS (Elastic Block Store)**
+EC2にアタッチすることのできる仮想データドライブ．いわゆる"普通の"(一般的なOSで使われている)ファイルシステムを思い浮かべてくれたらよい．
 
-S3 (Simple Storage Service)::
+image:imgs/aws_logos/S3.png[S3, 40, role="left"]
+**S3 (Simple Storage Service)**
 Object Storage と呼ばれる，APIをつかってデータの読み書きを行う，いうなれば”クラウド・ネイティブ”なデータの格納システムである．通常のファイルシステムの機能に加えてバージョン管理などの機能が付与されている．Serverless architecutre の章で詳しく解説する．
 
 ==== データベース
 
-DynamoDB::
+image:imgs/aws_logos/DynamoDB.png[S3, 40, role="left"]
+**DynamoDB**
 NoSQL型のデータベースサービス(知っている人は `mongoDB` などを思い浮かべたらよい)．Serverless architecutre の章で詳しく解説する．
 
 ==== ネットワーク
 
-VPC(Virtual Private Cloud)::
+image:imgs/aws_logos/VPC.png[S3, 40, role="left"]
+**VPC(Virtual Private Cloud)**
 AWS上に仮想ネットワーク環境を作成し，仮想サーバー間の接続を定義したり，外部からのアクセスなどを管理する．EC2はVPCの内部に配置されなければならない．
 
 === Region と Availability Zone
@@ -211,6 +217,11 @@ $ aws s3 ls
 ----
 
 先ほど作成したバケットがリストにあることを確認できる．
+
+[NOTE]
+====
+本書のノーテーションとして，シェル(ターミナル)に入力するコマンドは，それがシェルであると明示する目的で先頭に `$` がつけてある． `$` はコマンドをコピー&ペーストするときは除かなければならない．逆に，コマンドの出力は `$` なしで表示されている．
+====
 
 次に，バケットにファイルをアップロードする．
 
