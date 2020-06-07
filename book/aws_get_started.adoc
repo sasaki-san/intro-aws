@@ -6,18 +6,19 @@
 
 AWS (Amazon Web Service) はAmazon社が提供する総合的なクラウドプラットフォームである．
 
-AWSはAmazonが持つ膨大な計算リソースを貸し出すクラウドサービスとして，2006年に誕生した．現在では，クラウドプロバイダーとして最大のマーケットシェア(約33%)を保持している(ソース: https://www.canalys.com/newsroom/cloud-market-share-q4-2018-and-full-year-2018[Market report by canalys])．Netflix, Expediaをはじめとした多くのウェブ関連のサービスで，一部または全てのサーバーリソースがAWSから提供されているとのことである．よって，知らないうちにAWSの恩恵にあずかっている人も少なくないはずだ．
+AWSはAmazonが持つ膨大な計算リソースを貸し出すクラウドサービスとして，2006年に誕生した．現在では，クラウドプロバイダーとして最大のマーケットシェア(約33%)を保持している(ソース: https://www.canalys.com/newsroom/cloud-market-share-q4-2018-and-full-year-2018[Market report by canalys])．Netflix, Slackをはじめとした多くのウェブ関連のサービスで，一部または全てのサーバーリソースがAWSから提供されているとのことである．よって，知らないうちにAWSの恩恵にあずかっている人も少なくないはずだ．
 
 最大のシェアをもつだけに，とても幅広い機能・サービスが提供されており，科学・エンジニアリングの研究用途としても頻繁に用いられるようになってきている．
 
 === AWSの機能・サービス
 
-下の図は，執筆時点においてAWSで提供されている主要な機能・サービスの一覧である．
+<<fig_aws_services>> は，執筆時点においてAWSで提供されている主要な機能・サービスの一覧である．
 
+[[fig_aws_services]]
 .AWSで提供されている主要なサービス一覧
 image::imgs/aws_services.png[AWS services, 350, align="center"]
 
-計算，ストレージ，データベース，ネットワーク，セキュリティなど，クラウドの構築に必要な様々な要素が**独立したコンポーネント**として提供されている．基本的に，これらを組み合わせることでひとつのクラウドができあがる．
+計算，ストレージ，データベース，ネットワーク，セキュリティなど，クラウドの構築に必要な様々な要素が**独立したコンポーネント**として提供されている．基本的に，これらを組み合わせることでひとつのクラウドシステムができあがる．
 
 また，機械学習・音声認識・AR/VRなど，特定のアプリケーションにパッケージ済みのサービスも提供されている．これらを合計すると全部で176個のサービスが提供されているとのことである(https://dev.classmethod.jp/articles/aws-summary-2020/[出典])．
 
@@ -36,28 +37,55 @@ Function as a Service (FaaS)と呼ばれる，小さな計算を**サーバー�
 ==== ストレージ
 
 EFS (Elastic File System)::
-NFS(Network file system)による分散ファイルシステム．いわゆる"普通の"(スラッシュ `/` でパスが連結された)ファイルシステムを思い浮かべてくれたらよい．
+NFS(Network file system)による分散ファイルシステム．いわゆる"普通の"(一般的なOSで使われている)ファイルシステムを思い浮かべてくれたらよい．
 
 S3 (Simple Storage Service)::
-Object Storage と呼ばれる，通常のファイルシステムの機能に加えてバージョン管理などの機能が付与されている．Serverless architecutre の章で詳しく解説する．
+Object Storage と呼ばれる，APIをつかってデータの読み書きを行う，いうなれば”クラウド・ネイティブ”なデータの格納システムである．通常のファイルシステムの機能に加えてバージョン管理などの機能が付与されている．Serverless architecutre の章で詳しく解説する．
 
 ==== データベース
 
 DynamoDB::
-NoSQL型のデータベースサービス(知っている人は `mongoDB` なんかを思い浮かべたらよい)．Serverless architecutre の章で詳しく解説する．
+NoSQL型のデータベースサービス(知っている人は `mongoDB` などを思い浮かべたらよい)．Serverless architecutre の章で詳しく解説する．
 
 ==== ネットワーク
 
 VPC(Virtual Private Cloud)::
-AWS上に仮想ネットワーク環境を作成し，外部からのアクセスなどを管理する．EC2はVPCの内部に配置されなければならない．
+AWS上に仮想ネットワーク環境を作成し，仮想サーバー間の接続を定義したり，外部からのアクセスなどを管理する．EC2はVPCの内部に配置されなければならない．
 
 === Region と Availability Zone
 
+AWSを使用する際の重要な概念として， `Region` と `Availability Zone (AZ)` がある(<<fig_aws_regions_and_azs>>)．
 
+[[fig_aws_regions_and_azs]]
+.AWSにおける Region と Availability Zones
+image::imgs/aws_region_and_az.png[AWS regions and azs, 500, align="center"]
+
+`Region` とは，データセンターの所在地のことである．執筆時点において，AWSは世界の24の国と地域でデータセンターを所有している． <<fig_aws_regions>> は2020/05時点で利用できるRegionの世界地図を示している．**インターネットの接続などの観点から，地理的に一番近いRegionを使用するのが一般的によい．**日本では東京にデータセンターがある．また大阪リージョンも2021年に提供開始予定とのことである．各Regionには固有のIDがついており，例えば東京は `ap-northeast-1`, 米国・オハイオ州は `us-west-2`，などと定義されている．
+
+[[fig_aws_regions]]
+.Regions in AWS(出典: https://aws.amazon.com/about-aws/global-infrastructure/)
+image::imgs/aws_regions.png[AWS regions, 600, align="center"]
+
+AWSコンソールにログインすると，画面右上でリージョンを選択することができる(<<fig_aws_console_regions>>)．EC2, S3 などのAWSのリソースは，リージョンごとに完全に独立である．したがって，リソースを新たにデプロイする時，あるいはデプロイ済みのリソースを閲覧するときは，コンソールのリージョンが正しく設定されているか，確認する必要がある．
+
+ネットのウェブビジネスを展開する場合などは，世界の各地にクラウドを展開する必要があるが，個人的な研究用途として用いる場合は，最寄りのリージョン(i.e. 東京)を使えば基本的に問題ない．
+
+[[fig_aws_console_regions]]
+.AWSコンソールでリージョンを選択
+image::imgs/aws_regions2.png[AWS console select regions, 500, align="center"]
+
+`Avaialibity Zone (AZ)` とは，Region 内で地理的に隔離されたデータセンターのことである．リージョンは2個以上のAZを有しており，もしひとつのAZで火災や停電などが起きた場合でも，他のAZがその障害をカバーすることができる．また，AZ間は高速なAWS専用ネットワーク回線で結ばれているため，AZ間のデータ転送は極めて早い．
+
+AZは，ネットのビジネスなどでサーバーダウンが許容されない場合などに注意すべき概念であり，個人的な用途で使う限りにおいてはあまり深く考慮する必要はない．言葉の意味だけ知っておけば十分である．
+
+.Further reading
+****
+* https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html[AWS documentation "Regions, Availability Zones, and Local Zones"]
+****
 
 === AWSでのクラウドの開発
 
-AWSクラウドの全体の概要がわかってきたところで，次のトピックとして，どのようにしてAWS上にクラウドの開発を行い，展開していくかについての概略を解説をしよう．
+AWSのクラウドの全体像がわかってきたところで，次のトピックとして，どのようにしてAWS上にクラウドの開発を行い，展開していくかについての概略を解説をしよう．
 
 AWSのリソースを追加・編集・削除などの操作を実行するには，**コンソールを用いる**方法と，**APIを用いる方法**の，二つの経路がある．
 
