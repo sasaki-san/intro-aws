@@ -30,13 +30,13 @@ https://www.docker.com/[Docker]
 
 講義では，AWS上にクラウドを展開するハンズオンを実施する．そこで紹介するプログラムを実行するため，以下の計算機環境が必要である．
 
-- **UNIX系コンソール**: ハンズオンで紹介するコマンドを実行するため，UNIX系のコンソール環境が必要である．Mac または Linux のユーザーは，OSに標準搭載のコンソールを使用すればよい．Windowsのユーザーは，
+- **UNIX系コンソール**: ハンズオンで紹介するコマンドを実行したり，SSHでサーバーにアクセスするため，UNIX系のコンソール環境が必要である．Mac または Linux のユーザーは，OSに標準搭載のコンソールを使用すればよい．Windowsのユーザーは，
 https://docs.microsoft.com/en-us/windows/wsl/install-win10[Windows Subsystem for Linux (WSL)]
 を使ってUbuntuの仮想環境をインストールすることを推奨する．
 WSLのインストールについては，
 https://docs.microsoft.com/en-us/windows/wsl/install-win10[公式ドキュメンテーションを参照]
 のこと．
-- **Dockerのインストール**: 講義ではDockerの使い方を解説する．予め自身の計算機にDockerのインストールをしておくと，自身の計算機で試してみたいときにスムーズである．Windowsユーザーに関しては，執筆時点において，**Windows 10 Home**へのインストールには注意が必要である．詳細は
+- **Dockerのインストール**: 講義ではDockerの使い方を解説する．予め自身の計算機にDockerのインストールをしておくとこと．Linux/Mac/Windowsのインストール法については https://docs.docker.com/get-docker/[公式ドキュメンテーション]を参照．執筆時点において，**Windows 10 Home**へのインストールには注意が必要である．詳細は
 https://docs.docker.com/docker-for-windows/install-windows-home/[こちらのドキュメンテーションを参照]
 のこと．
 - **Python** (Version 3.6以上推奨)
@@ -46,25 +46,32 @@ https://docs.docker.com/docker-for-windows/install-windows-home/[こちらのド
 
 本講義を行うにあたり，前提知識は特に仮定しない．が，以下の前提知識があるとよりスムーズに理解をすることができるだろう．
 
-- **Pythonの基本的な理解**: 本講義ではPythonを用いたプログラムの作成を行う．Pythonの基本的な理解があるとスムーズである．使用するライブラリは十分抽象化されており，コマンドの名前を見ただけで意味が明瞭なものがほとんどであるので，Pythonに詳しくなくても心配はない．
-- **Linuxの基礎的な理解**: クラウドを利用する際，クラウド上に立ち上がるサーバーは基本的にLinuxである(Windowsを選択することもできなくはないが一般的ではない)．Linuxのコマンドラインについて知識があると，トラブルシュートなどが容易になる．
+- **Pythonの基本的な理解**: 本講義ではPythonを使ってプログラムの作成を行う．使用するライブラリは十分抽象化されており，関数の名前を見ただけで意味が明瞭なものがほとんどであるので，Pythonに詳しくなくても心配はない．
+- **Linuxコマンドラインの基礎的な理解**: クラウドを利用する際，クラウド上に立ち上がるサーバーは基本的にLinuxである(Windowsを選択することもできなくはないが一般的ではない)．Linuxのコマンドラインについて知識があると，トラブルシュートなどが容易になる．
 
 === AWSアカウント
 
 本講義のハンズオンを実行するにあたり，個人のAWSアカウントの取得が必要である．
 
-https://aws.amazon.com/education/awseducate/[AWS Educate]
-を介してアカウントを作成すれば，$35分の利用クーポンが手に入る．
+AWSには無料利用枠(Free tier)というものがあり，少量の計算であれば無料で行える (https://aws.amazon.com/free/?all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc[詳細])．講義のハンズオンではなるべく無料枠内で完結できるよう努めるが，場合によっては多少のコストが発生する可能性がある点はご承知いただきたい．
 
-AWSには無料利用枠があり，講義のハンズオンではなるべく無料枠内で利用できるよう努めるが，多少のコストが発生する可能性がある点はご承知いただきたい．
+また，
+https://aws.amazon.com/education/awseducate/[AWS Educate]
+を介してアカウントを作成すれば，$30分の利用クーポンが手に入るので(2020/05時点)，ぜひ利用していただきたい．
 
 [NOTE]
 ====
-AWS Educate の登録の際にはECCSのメールアドレス(`g.ecc.u-tokyo.ac.jp`)を使用する．
+AWS Educate の登録手順についてはAppendixに記載してある．
 ====
 
-=== もっと勉強したい人へ
+=== 講義に関連する資料
 
+ハンズオンで使うプログラム，および教科書とそのソースコードは以下のGitLabで公開している．
+
+https://gitlab.com/tomomano/intro-aws
+
+.もっと勉強したい人へ
+****
 クラウドの実践的な教材としては，以下のリソースが役に立つだろう．
 
 - https://aws.amazon.com/education/awseducate/[AWS Educate]
@@ -73,10 +80,4 @@ AWS Educate の登録の際にはECCSのメールアドレス(`g.ecc.u-tokyo.ac.
 (クラウド技術は日進月歩であり，新しい機能やサービスが毎年のように更新され，昔の情報はどんどん古くなっていく．公式ドキュメンテーションで常に最新の情報を参照すべし．)
 
 また，クラウドというのは様々な情報技術の総体である．クラウドのインフラを支える理論について興味がある場合は，ネットワーク・OS・データベースなど，個別のテーマに絞った本を参照することをおすすめする．
-
-=== 講義に関連する資料
-
-ハンズオンで使うプログラム，および本教科書のソースコードは以下のGitLabで公開している．
-
-https://gitlab.com/tomomano/intro-aws
-
+****

@@ -1,0 +1,33 @@
+== Appendix
+
+=== AWS Educate のアカウント作成
+
+執筆時点において，AWS Educateに参加すると，$30分のAWS利用クーポンが手に入る．また，AWS Educateの提供する各種オンライン教材にアクセスすることができる．以下に登録の手順を示す．
+
+[NOTE]
+====
+ここに示すのは執筆時点(2020/05)での情報である．将来的に手順が変更される可能性があることに注意．
+====
+
+AWS Educate アカウントの作成
+
+. AWS Educate のページへ行く． https://aws.amazon.com/education/awseducate/
+. "Join AWS Educate" > "Student" を選択．
+. アカウント情報を入力．東大ECCSのメールアドレス(`g.ecc.u-tokyo.ac.jp`)を使用する．
+. メールアドレスの確認がメールで届くので，リンクに従って認証する．
+. アカウントが認可されるまで少し時間がかかるので，待つ．
+. アカウントが認可されると，AWS Educate にログインできるようになる．
+
+AWS Educate から AWS アカウントを使用する
+
+. AWS Educate にログインしたら，トップバーの"AWS Account"をクリック．そこから"AWS Educate Starter Account"をクリック(下図参照)．
+. 遷移した先のページ(vocareum)にある "AWS Console" をクリックすると，AWSのコンソール画面へ遷移する(下図参照)．
+** このコンソール画面から，クーポンの利用分だけ任意の機能を使うことができる．
+. 遷移した先のページ(vocareum)にある "Account Details" をクリックすると，CLIからAWSにアクセスするためのアクセスキーなどが表示される(下図参照)．
+** `aws_access_key_id`, `aws_secret_access_key` の値を確認．
+
+.AWS Educate スクリーンショット1
+image::imgs/aws_educate.png[AWS Educate, 600, align="center"]
+
+.AWS Educate スクリーンショット2
+image::imgs/aws_educate_account.png[AWS Educate, 600, align="center"]

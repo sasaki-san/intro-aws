@@ -4,10 +4,22 @@ v1.0, May 2020
 :toc:
 :sectnums:
 :source-highlighter: rouge
-:table-caption!:
+:rouge-style: github
 :icons: font
+:xrefstyle: short
 
 include::introduction.adoc[]
 include::cloud.adoc[]
+include::aws_get_started.adoc[]
+include::appendix.adoc[]
 include::author.adoc[]
 include::license.adoc[]
+
+// Additional styles
+++++
+<style>
+  .imageblock > .title {
+    text-align: inherit;
+  }
+</style>
+++++
