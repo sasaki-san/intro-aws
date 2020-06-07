@@ -6,7 +6,7 @@
 
 - テキスト(HTML版)はこちら https://tomomano.gitlab.io/intro-aws/
 - テキスト(PDF版)はこちら [book.pdf](book.pdf)
-- ハンズオンで使用するプログラム => [tutorial/](tutorial/)
+- ハンズオンで使用するプログラム => [handson/](handson/)
 
 ## 更新履歴
 
