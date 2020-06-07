@@ -39,7 +39,7 @@ image::imgs/aws_educate_account.png[AWS Educate, 600, align="center"]
 === Python, node.js のインストール
 
 [[aws_cli_install]]
-==== AWS CLI のインストール
+=== AWS CLI のインストール
 
 https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html[公式のドキュメンテーション]に従い，インストールを行う．
 
@@ -77,5 +77,46 @@ $ aws configure
 $ cat ~/.aws/credentials
 $ cat ~/.aws/config
 ----
+====
+
+[[aws_cdk_install]]
+=== AWS CDK のインストール
+
+https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html[公式ドキュメント]に従いインストールを行う．
+
+node.js がインストールされてれば，基本的に以下のコマンドを実行すれば良い．
+
+[source, bash]
+----
+$ npm install -g aws-cdk
+----
+
+[NOTE]
+====
+本書のハンズオンはAWS CDK version 1.44.0 で開発した．CDK は開発途上のライブラリなので，将来的にAPIが変更される可能性がある．APIの変更によりエラーが生じた場合は， version 1.44.0 を使用することを推奨する．
+
+[source bash]
+----
+$ npm install -g aws-cdk@1.44
+----
+====
+
+インストールできたか確認するため，以下のコマンドを打って正しくバージョンが表示されることを確認する．
+
+[source, bash]
+----
+$ cdk --version
+----
+
+インストールができたら，以下のコマンドによりAWS側の初期設定を行う．これは一度実行すればOK．
+
+[source, bash]
+----
+$ cdk bootstrap
+----
+
+[NOTE]
+====
+`cdk bootstrap` を実行するときは，AWSの認証情報とリージョンが正しく設定されていることを確認する．デフォルトでは `~/.aws/config` にあるデフォルトのプロファイルが使用される．デフォルト以外のプロファイルを用いるときは `AWS_ACCESS_KEY_ID` などの環境変数を設定する (https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html[参照])．
 ====
 
