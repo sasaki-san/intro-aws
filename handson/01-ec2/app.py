@@ -14,31 +14,33 @@ class MyFirstEc2(core.Stack):
     def __init__(self, scope: core.App, name: str, props: StackProps, **kwargs) -> None:
         super().__init__(scope, name, **kwargs)
 
-        # Set up VPC
         vpc = ec2.Vpc(
             self, "MyFirstEc2-Vpc",
             max_azs=1,
-            cidr="10.10.0.0/20",
+            cidr="10.10.0.0/23",
             subnet_configuration=[
                 ec2.SubnetConfiguration(
-                    name="PublicSubnet",
+                    cidr_mask=24,
+                    name="public",
                     subnet_type=ec2.SubnetType.PUBLIC,
+                ),
+                ec2.SubnetConfiguration(
+                    cidr_mask=24,
+                    name="private",
+                    subnet_type=ec2.SubnetType.PRIVATE,
                 )
             ],
             nat_gateways=0,
         )
 
-        # Set up Security Groups
         sg = ec2.SecurityGroup(
             self, "MyFirstEc2Vpc-Sg",
             vpc=vpc,
-            description="Allow SSH access to EC2 instances",
             allow_all_outbound=True,
         )
         sg.add_ingress_rule(
             peer=ec2.Peer.any_ipv4(),
             connection=ec2.Port.tcp(22),
-            description="Allow port 22 from any IP address"
         )
 
         # create a new EC2 instance
