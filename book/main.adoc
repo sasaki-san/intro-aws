@@ -5,8 +5,8 @@ v1.0, May 2020
 :sectnums:
 :source-highlighter: rouge
 :rouge-style: github
-:table-caption!:
 :icons: font
+:xrefstyle: short
 
 include::introduction.adoc[]
 include::cloud.adoc[]

@@ -2,7 +2,7 @@
 
 === AWS Educate のアカウント作成
 
-執筆時点において，AWS Educateに参加すると，$30分のAWS利用クーポンが手に入る．また，AWS Educateの提供する各種教材にアクセスすることができる．以下に登録の手順を示す．
+執筆時点において，AWS Educateに参加すると，$30分のAWS利用クーポンが手に入る．また，AWS Educateの提供する各種オンライン教材にアクセスすることができる．以下に登録の手順を示す．
 
 [NOTE]
 ====
@@ -31,4 +31,3 @@ image::imgs/aws_educate.png[AWS Educate, 600, align="center"]
 
 .AWS Educate スクリーンショット2
 image::imgs/aws_educate_account.png[AWS Educate, 600, align="center"]
-
