@@ -125,7 +125,7 @@ S3に新しい保存領域(バケットと呼ばれる)を追加したいとし�
 
 [source,bash]
 ----
-$ aws s3api create-bucket --bucket my-bucket --region ap-northeast-1
+$ aws s3 mb s3://my-bucket
 ----
 
 上記のコマンドは， `my-bucket` という名前のバケットを， `ap-northeast-1` のregionに作成する．なお，上記のコマンドを実行する前提として，認証鍵を用いたAWSへのログインは済んでいるものとする(ハンズオンにて詳しく解説)．
@@ -174,6 +174,77 @@ ec2_client.run_instances(
 以上の具体例を通じて，APIによるクラウドのリソースの操作のイメージがつかめてきただろうか？
 コマンド一つで，新しい仮想サーバーを起動したり，データの保存領域を追加したり，任意の操作を実行することができるわけである．
 基本的に，このようなコマンドを複数組み合わせていくことで，自分の望むCPU・RAM・ネットワーク・ストレージが備わった計算環境をを構築することができる．もちろん，逆の操作(リソースの削除)もAPIを使って実行できる．
+
+==== ミニ・ハンズオン: AWS CLI を使ってみよう
+
+ここでは，ミニ・ハンズオンとして，AWS CLI を実際に使ってみる．
+
+[TIP]
+====
+AWS CLI のインストールについては， <<aws_cli_install>> を参照．
+====
+
+[TIP]
+====
+以下のコマンドを実行する前に，AWSの認証情報が正しく設定されていることを確認する．これには `~/.aws/credentials` のファイルに設定が書き込まれているか，環境変数 (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_DEFAULT_REGION`) が定義されている必要がある．
+====
+
+ここでは一番シンプルな，S3を使ったファイルの読み書きを実践する (EC2の操作は少し複雑なので，第一回ハンズオンで行う)． `aws s3` コマンドの詳しい使い方は https://docs.aws.amazon.com/cli/latest/reference/s3/index.html#cli-aws-s3[公式ドキュメンテーション]を参照．
+
+まず，最初にS3にデータの格納領域 (`Bucket` と呼ばれる)を作成する．
+
+[source, bash]
+----
+$ bucketName="mybucket-$(openssl rand -hex 12)"
+$ echo $bucketName
+$ aws s3 mb "s3://${bucketName}"
+----
+
+S3のバケットの名前は，グローバルにユニークでなければならないことから，上ではランダムな文字列を含んだバケットの名前を生成し，`$bucketName` という変数に格納している．
+
+次に，バケットの一覧を取得してみよう．
+[source, bash]
+----
+$ aws s3 ls
+
+2020-06-07 23:45:44 mybucket-c6f93855550a72b5b66f5efe
+----
+
+先ほど作成したバケットがリストにあることを確認できる．
+
+次に，バケットにファイルをアップロードする．
+
+[source, bash]
+----
+$ echo "Hello world!" > hello_world.txt
+$ aws s3 cp hello_world.txt "s3://${bucketName}/hello_world.txt"
+----
+
+上では `hello_world.txt` というダミーのファイルを作成して，それをアップロードした．
+
+それでは，バケットの中にあるファイルの一覧を取得してみる．
+
+[source, bash]
+----
+$ aws s3 ls "s3://${bucketName}" --human-readable
+
+2020-06-07 23:54:19   13 Bytes hello_world.txt
+----
+
+先ほどアップロードしたファイルがたしかに存在することがわかる．
+
+次に
+
+最後に，使い終わったバケットを削除する．
+
+[source, bash]
+----
+aws s3 rb "s3://${bucketName}" --force
+----
+
+デフォルトでは，バケットは空でないと削除できない．空でないバケットを強制的に削除するには `--force` のオプションを付ける．
+
+以上のように，AWS CLI を使って，S3のバケットの操作を実行することができた．EC2やLambda, DynamoDBなどについても同様に AWS CLI を使ってあらゆる操作を実行することができる．
 
 === CloudFormation と AWS CDK
 

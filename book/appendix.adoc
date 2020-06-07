@@ -1,5 +1,6 @@
 == Appendix
 
+[[appendix_aws_account]]
 === AWS Educate のアカウント作成
 
 執筆時点において，AWS Educateに参加すると，$30分のAWS利用クーポンが手に入る．また，AWS Educateの提供する各種オンライン教材にアクセスすることができる．以下に登録の手順を示す．
@@ -25,9 +26,56 @@ AWS Educate から AWS アカウントを使用する
 ** このコンソール画面から，クーポンの利用分だけ任意の機能を使うことができる．
 . 遷移した先のページ(vocareum)にある "Account Details" をクリックすると，CLIからAWSにアクセスするためのアクセスキーなどが表示される(下図参照)．
 ** `aws_access_key_id`, `aws_secret_access_key` の値を確認．
+** これらの値を `~/.aws/credentials` などのファイルに保存する (https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html[参照])．
 
 .AWS Educate スクリーンショット1
 image::imgs/aws_educate.png[AWS Educate, 600, align="center"]
 
 .AWS Educate スクリーンショット2
 image::imgs/aws_educate_account.png[AWS Educate, 600, align="center"]
+
+
+[[python_nodejs_install]]
+=== Python, node.js のインストール
+
+[[aws_cli_install]]
+==== AWS CLI のインストール
+
+https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html[公式のドキュメンテーション]に従い，インストールを行う．
+
+Linuxマシンならば，以下のコマンドを実行すれば良い．
+
+[source, bash]
+----
+$ curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+$ unzip awscliv2.zip
+$ sudo ./aws/install
+----
+
+インストールできたか確認するため，以下のコマンドを打って正しくバージョンが表示されることを確認する．
+
+[source, bash]
+----
+$ aws --version
+----
+
+インストールができたら，以下のコマンドにより初期設定を行う (https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html[参照])．
+
+[source, bash]
+----
+$ aws configure
+----
+
+コマンドを実行すると， `AWS Access Key ID`, `AWS Secret Access Key` を入力するよう指示される．これらの認証情報の取得については <<appendix_aws_account>> を参照．コマンドは加えて，`Default region name` を訊いてくる．ここには `ap-northeast-1` (東京リージョン)を指定するのがよい．最後の `Default output format` は `JSON` としておくとよい．
+
+[NOTE]
+====
+上記を完了すると，  `~/.aws/credentials` と `~/.aws/config`　という名前のファイルに設定が保存されているはずである．念の為，中身をしてみるとよい．
+
+[source, bash]
+----
+$ cat ~/.aws/credentials
+$ cat ~/.aws/config
+----
+====
+
