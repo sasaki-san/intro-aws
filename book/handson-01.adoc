@@ -82,3 +82,62 @@ SSH コマンドはデフォルトの動作として， `~/.ssh/` のディレ�
 .ハンズオン#1で作製するアプリケーションのアーキテクチャ
 image::imgs/handson-01.png[hands-on 01 architecture, 600, align="center"]
 
+このアプリケーションは，ではまず，**VPC (Virtual Private Cloud)** を使って自分だけの仮想ネットワーク環境を立ち上げている．
+そのVPCの public subnet の内側に，**EC2 (Elatic Compute Cloud)** の仮想サーバーを配置している．
+さらに，セキュリティのため， **Security Group** によるEC2インスタンスへのアクセス制限を配置している．
+
+それぞれについて，簡単な説明を以下で行う．
+
+==== EC2 (Elastic Compute Cloud)
+
+EC2 はAWS上に仮想サーバーを立ち上げるサービスである．個々の起動状態にある仮想サーバーのことをインスタンス (instance) と呼ぶ．
+
+EC2には様々なインスタンスタイプがあり，自身のアプリケーションで必要なCPUコア数・メモリーサイズ・ネットワーク速度などに応じて，適切なものを選択することができる．以下に，代表的なインスタンスタイプを挙げる．EC2 のインスタンスタイプのすべてのリストは https://aws.amazon.com/ec2/instance-types/[公式ドキュメンテーション]で見ることができる．
+
+[options="header"] 
+.EC2 instance types
+|===
+|Instance
+|vCPU
+|Memory (GiB)
+|Network bandwidth (Gbps)
+|Note
+
+|t2.micro
+|1
+|1
+|-
+|-
+
+|c5.24xlarge
+|96
+|192
+|25
+|Compute optimized
+
+|c5n.18xlarge
+|72
+|192
+|100
+|Network optimized
+
+|x1e.16xlarge
+|64
+|1952
+|10
+|Memory optimized
+
+|p3.2xlarge
+|8
+|61
+|-
+|1 GPU (NVIDIA Tesla V100)
+|===
+
+このようにCPUは1コアから最大で96コアまで，メモリーは1GBから3000GB以上まで，ネットワークは最大で100Gbpsまで，幅広く選択することができる．また，ディープラーニングなどの用途で，GPU (Graphical processing unit) を搭載したインスタンスタイプも存在する．
+
+
+==== VPC
+
+==== Security Group
+
