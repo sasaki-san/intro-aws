@@ -99,7 +99,7 @@ image::imgs/handson-01/app_architecture.png[hands-on 01 architecture, 600, align
 
 上記のようなアプリケーションを，CDKを使って構築する．
 
-早速ではあるが，今回のハンズオンで使用するプログラムを見てみよう (https://gitlab.com/tomomano/intro-aws/handson/01-ec2[handson/01-ec2/app.py])．
+早速ではあるが，今回のハンズオンで使用するプログラムを見てみよう (https://gitlab.com/tomomano/intro-aws/-/tree/master/handson/01-ec2/app.py[handson/01-ec2/app.py])．
 
 [source, python]
 ----
