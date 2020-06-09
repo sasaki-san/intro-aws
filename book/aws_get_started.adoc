@@ -28,28 +28,34 @@ AWSの初心者は，この大量のサービスの数に圧倒され，どこ�
 
 ==== 計算
 
-EC2 (Elastic Compute Cloud)::
+image:imgs/aws_logos/EC2.png[S3, 40, role="left"]
+**EC2 (Elastic Compute Cloud)**
 様々なスペックの仮想マシンを作成し，計算を実行することができる．科学計算では，おそらくこれをメインで使うことになる．
 
-Lambda::
+image:imgs/aws_logos/Lambda.png[S3, 40, role="left"]
+**Lambda**
 Function as a Service (FaaS)と呼ばれる，小さな計算を**サーバーなし**で実行するためのサービス．Serverless architecutre の章で詳しく解説する．
 
 ==== ストレージ
 
-EFS (Elastic File System)::
-NFS(Network file system)による分散ファイルシステム．いわゆる"普通の"(一般的なOSで使われている)ファイルシステムを思い浮かべてくれたらよい．
+image:imgs/aws_logos/EBS.png[S3, 40, role="left"]
+**EBS (Elastic Block Store)**
+EC2にアタッチすることのできる仮想データドライブ．いわゆる"普通の"(一般的なOSで使われている)ファイルシステムを思い浮かべてくれたらよい．
 
-S3 (Simple Storage Service)::
+image:imgs/aws_logos/S3.png[S3, 40, role="left"]
+**S3 (Simple Storage Service)**
 Object Storage と呼ばれる，APIをつかってデータの読み書きを行う，いうなれば”クラウド・ネイティブ”なデータの格納システムである．通常のファイルシステムの機能に加えてバージョン管理などの機能が付与されている．Serverless architecutre の章で詳しく解説する．
 
 ==== データベース
 
-DynamoDB::
+image:imgs/aws_logos/DynamoDB.png[S3, 40, role="left"]
+**DynamoDB**
 NoSQL型のデータベースサービス(知っている人は `mongoDB` などを思い浮かべたらよい)．Serverless architecutre の章で詳しく解説する．
 
 ==== ネットワーク
 
-VPC(Virtual Private Cloud)::
+image:imgs/aws_logos/VPC.png[S3, 40, role="left"]
+**VPC(Virtual Private Cloud)**
 AWS上に仮想ネットワーク環境を作成し，仮想サーバー間の接続を定義したり，外部からのアクセスなどを管理する．EC2はVPCの内部に配置されなければならない．
 
 === Region と Availability Zone
@@ -125,7 +131,7 @@ S3に新しい保存領域(バケットと呼ばれる)を追加したいとし�
 
 [source,bash]
 ----
-$ aws s3api create-bucket --bucket my-bucket --region ap-northeast-1
+$ aws s3 mb s3://my-bucket
 ----
 
 上記のコマンドは， `my-bucket` という名前のバケットを， `ap-northeast-1` のregionに作成する．なお，上記のコマンドを実行する前提として，認証鍵を用いたAWSへのログインは済んでいるものとする(ハンズオンにて詳しく解説)．
@@ -174,6 +180,82 @@ ec2_client.run_instances(
 以上の具体例を通じて，APIによるクラウドのリソースの操作のイメージがつかめてきただろうか？
 コマンド一つで，新しい仮想サーバーを起動したり，データの保存領域を追加したり，任意の操作を実行することができるわけである．
 基本的に，このようなコマンドを複数組み合わせていくことで，自分の望むCPU・RAM・ネットワーク・ストレージが備わった計算環境をを構築することができる．もちろん，逆の操作(リソースの削除)もAPIを使って実行できる．
+
+==== ミニ・ハンズオン: AWS CLI を使ってみよう
+
+ここでは，ミニ・ハンズオンとして，AWS CLI を実際に使ってみる．
+
+[TIP]
+====
+AWS CLI のインストールについては， <<aws_cli_install>> を参照．
+====
+
+[TIP]
+====
+以下のコマンドを実行する前に，AWSの認証情報が正しく設定されていることを確認する．これには `~/.aws/credentials` のファイルに設定が書き込まれているか，環境変数 (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_DEFAULT_REGION`) が定義されている必要がある．
+====
+
+ここでは一番シンプルな，S3を使ったファイルの読み書きを実践する (EC2の操作は少し複雑なので，第一回ハンズオンで行う)． `aws s3` コマンドの詳しい使い方は https://docs.aws.amazon.com/cli/latest/reference/s3/index.html#cli-aws-s3[公式ドキュメンテーション]を参照．
+
+まず，最初にS3にデータの格納領域 (`Bucket` と呼ばれる)を作成する．
+
+[source, bash]
+----
+$ bucketName="mybucket-$(openssl rand -hex 12)"
+$ echo $bucketName
+$ aws s3 mb "s3://${bucketName}"
+----
+
+S3のバケットの名前は，グローバルにユニークでなければならないことから，上ではランダムな文字列を含んだバケットの名前を生成し，`$bucketName` という変数に格納している．
+
+次に，バケットの一覧を取得してみよう．
+[source, bash]
+----
+$ aws s3 ls
+
+2020-06-07 23:45:44 mybucket-c6f93855550a72b5b66f5efe
+----
+
+先ほど作成したバケットがリストにあることを確認できる．
+
+[NOTE]
+====
+本書のノーテーションとして，シェル(ターミナル)に入力するコマンドは，それがシェルであると明示する目的で先頭に `$` がつけてある． `$` はコマンドをコピー&ペーストするときは除かなければならない．逆に，コマンドの出力は `$` なしで表示されている．
+====
+
+次に，バケットにファイルをアップロードする．
+
+[source, bash]
+----
+$ echo "Hello world!" > hello_world.txt
+$ aws s3 cp hello_world.txt "s3://${bucketName}/hello_world.txt"
+----
+
+上では `hello_world.txt` というダミーのファイルを作成して，それをアップロードした．
+
+それでは，バケットの中にあるファイルの一覧を取得してみる．
+
+[source, bash]
+----
+$ aws s3 ls "s3://${bucketName}" --human-readable
+
+2020-06-07 23:54:19   13 Bytes hello_world.txt
+----
+
+先ほどアップロードしたファイルがたしかに存在することがわかる．
+
+次に
+
+最後に，使い終わったバケットを削除する．
+
+[source, bash]
+----
+aws s3 rb "s3://${bucketName}" --force
+----
+
+デフォルトでは，バケットは空でないと削除できない．空でないバケットを強制的に削除するには `--force` のオプションを付ける．
+
+以上のように，AWS CLI を使って，S3のバケットの操作を実行することができた．EC2やLambda, DynamoDBなどについても同様に AWS CLI を使ってあらゆる操作を実行することができる．
 
 === CloudFormation と AWS CDK
 
@@ -248,9 +330,44 @@ CloudFormation を記述するには， **JSON** (JavaScript Object Notation) �
 
 前節で紹介した CloudFormation は，見てわかるとおり大変記述が複雑であり，またそれのどれか一つにでも誤りがあってはいけない．また，基本的に"テキスト"を書いていくことになるので，プログラミング言語で使うような便利な変数やクラスといった概念が使えない(厳密には，変数に相当するような機能は存在するのだが)．そのようなわけで，実際にCloudFormation 職人と呼ばれる専門のプロが存在するくらいである．一方，記述の多くの部分は繰り返しが多く，自動化できる部分も多い．
 
-そのような悩みを解決してくれるのが， https://aws.amazon.com/cdk/[AWS Cloud Development Kit (CDK)] である．CDKは Python などのプログラミング言語を使って CloudFormation を自動的に生成してくれるツールである．CDK は2019年にリリースされたばかりの比較的新しいツールで，日々改良が進められている (https://github.com/aws/aws-cdk/releases[GitHub] のソースのリリースを見ればその開発のスピードの速さがわかるだろう)．
+そのような悩みを解決してくれるのが， https://aws.amazon.com/cdk/[AWS Cloud Development Kit (CDK)] である．CDKは Python などのプログラミング言語を使って CloudFormation を自動的に生成してくれるツールである．CDK は2019年にリリースされたばかりの比較的新しいツールで，日々改良が進められている (https://github.com/aws/aws-cdk/releases[GitHub] のソースのリリースを見ればその開発のスピードの速さがわかるだろう)．CDK は TypeScript (JavaScript), Python, Java など複数の言語でサポートされている．
 
 CDKを使うことで，CloudFormation に相当するリソースの記述を，より親しみのあるプログラミング言語を使って行うことができる．かつ，典型的なリソース操作に関してはパラメータの多くの部分を自動で決定してくれるので，記述しなければならない量もかなり削減される．
+
+以下に Python を使った CDK のコードの一例(抜粋)を示す．
+
+[source, python]
+----
+from aws_cdk import (
+    core,
+    aws_ec2 as ec2,
+)
+
+class MyFirstEc2(core.Stack):
+
+    def __init__(self, scope, name, **kwargs):
+        super().__init__(scope, name, **kwargs)
+
+        vpc = ec2.Vpc(
+            ... # some parameters
+        )
+
+        sg = ec2.SecurityGroup(
+            ... # some parameters
+        )
+
+        host = ec2.Instance(
+            self, "MyGreatEc2",
+            instance_type=ec2.InstanceType("t2.micro"),
+            machine_image=ec2.MachineImage.latest_amazon_linux(),
+            vpc=vpc,
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
+            security_group=sg,
+            ...
+        )
+----
+
+上記のようなコードから，CloudFormationファイルを自動生成することができる．とても煩雑だったCloudFormationファイルに比べて，Python を使うことで格段に短く，わかりやすく記述できることができるのがわかるだろう．
 
 本講義では，ハンズオンでCDKを使ってクラウド開発の体験をしてもらう．
 
