@@ -5,6 +5,7 @@
 
 ハンズオンのソースコードはこちらのリンクに置いてある => https://gitlab.com/tomomano/intro-aws/handson/01-ec2
 
+[[handson_01_prep]]
 === 準備
 
 まずは，ハンズオンを実行するための環境を整える．
@@ -74,6 +75,17 @@ SSH コマンドはデフォルトの動作として， `~/.ssh/` のディレ�
 ここに秘密鍵ファイルを置いておけば `-i` オプションは付けなくてもよい．
 ====
 
+==== ソースコードのダウンロード
+
+以下のコマンドで GitLab からソースコードをダウンロードする．
+
+[source, bash]
+----
+$ git clone git@gitlab.com:tomomano/intro-aws.git
+----
+
+あるいは， https://gitlab.com/tomomano/intro-aws のページに行って，右上のダウンロードボタンから .zip アーカイブをダウンロードすることもできる．
+
 === アプリケーションの説明
 
 このハンズオンで作成するアプリケーションの概要を <<handson_01_architecture>> に示す．
@@ -82,19 +94,111 @@ SSH コマンドはデフォルトの動作として， `~/.ssh/` のディレ�
 .ハンズオン#1で作製するアプリケーションのアーキテクチャ
 image::imgs/handson-01.png[hands-on 01 architecture, 600, align="center"]
 
-このアプリケーションは，ではまず，**VPC (Virtual Private Cloud)** を使って自分だけの仮想ネットワーク環境を立ち上げている．
-そのVPCの public subnet の内側に，**EC2 (Elatic Compute Cloud)** の仮想サーバーを配置している．
-さらに，セキュリティのため， **Security Group** によるEC2インスタンスへのアクセス制限を配置している．
+このアプリケーションは，ではまず，**VPC (Virtual Private Cloud)** を使ってプライベートな仮想ネットワーク環境を立ち上げている．
+そのVPCの public subnet の内側に，**EC2 (Elatic Compute Cloud)** の仮想サーバーを配置する．
+さらに，セキュリティのため， **Security Group** によるEC2インスタンスへのアクセス制限を設定している．
 
-それぞれについて，簡単な説明を以下で行う．
+上記のようなアプリケーションを，CDKを使って構築する．
+
+早速ではあるが，今回のハンズオンで使用するプログラムを見てみよう (https://gitlab.com/tomomano/intro-aws/handson/01-ec2[handson/01-ec2/app.py])．
+
+[source, python]
+----
+class MyFirstEc2(core.Stack):
+
+    def __init__(self, scope: core.App, name: str, props: StackProps, **kwargs) -> None:
+        super().__init__(scope, name, **kwargs)
+
+        # <1>
+        vpc = ec2.Vpc(
+            self, "MyFirstEc2-Vpc",
+            max_azs=1,
+            cidr="10.10.0.0/23",
+            subnet_configuration=[
+                ec2.SubnetConfiguration(
+                    cidr_mask=24,
+                    name="public",
+                    subnet_type=ec2.SubnetType.PUBLIC,
+                ),
+                ec2.SubnetConfiguration(
+                    cidr_mask=24,
+                    name="private",
+                    subnet_type=ec2.SubnetType.PRIVATE,
+                )
+            ],
+            nat_gateways=0,
+        )
+
+        # <2>
+        sg = ec2.SecurityGroup(
+            self, "MyFirstEc2Vpc-Sg",
+            vpc=vpc,
+            allow_all_outbound=True,
+        )
+        sg.add_ingress_rule(
+            peer=ec2.Peer.any_ipv4(),
+            connection=ec2.Port.tcp(22),
+        )
+
+        # <3>
+        host = ec2.Instance(
+            self, "MyFirstEc2Instance",
+            instance_type=ec2.InstanceType("t2.micro"),
+            machine_image=ec2.MachineImage.latest_amazon_linux(),
+            vpc=vpc,
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
+            security_group=sg,
+            key_name=props.key_name
+        )
+----
+<1> まず最初に，VPCを定義する．
+<2> 次に，SGを定義している．ここでは，任意のIPv4のアドレスからの，ポート22 (SSHの接続に使用される)への接続を許容している．それ以外の接続は拒絶される．
+<3> 最後に，上記で作ったVPCとSGが付与されたEC2 のインスタンスを作成している．インスタンスタイプは `t2.micro` を選択し， https://aws.amazon.com/amazon-linux-ami/[Amazon Linux] をOSとして設定している．
+
+それぞれについて，もう少し詳しく説明しよう．
+
+==== VPC (Virtual Private Cloud)
+
+image::imgs/aws_logos/VPC.png[VPC, 100]
+
+VPCはAWS上にプライベートな仮想ネットワーク環境を構築するツールである．高度な計算システムを構築するには，複数のサーバーを連動させて計算を行う必要があるが，そのような場合に互いのアドレスなどを管理する必要があり，そのような場合にVPCは有用である．
+
+本ハンズオンでは，サーバーは一つしか起動しないので，VPCの恩恵はよく分からないかもしれない．しかし，EC2インスタンスは必ずVPCの中に配置されなければならない，という制約があるので，このハンズオンでもミニマルなVPCを構成している．
+
+[TIP]
+====
+**Advanced tips**
+
+興味のある読者のために，VPCのコードについてもう少し詳しく説明しよう．
+
+* `max_azs=1` : このパラメータは，前章で説明した avaialibility zone を設定している．このハンズオンでは，特にデータセンターの障害などを気にする必要はないので1にしている．
+* `cidr="10.10.0.0/23"` : このパラメターは，VPC内のIPv4のレンジを指定している．CIDR記法については， https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing[Wikipedia]などを参照． `10.10.0.0/23` は `10.10.0.0` から `10.10.1.255` までの512個の連続したアドレス範囲を指している．つまり，このVPCでは最大で512個のユニークなIPv4アドレスが使えることになる．今回はサーバーは一つなので512個は明らかに多すぎるが，VPCはアドレスの数はどれだけ作成しても無料なので，多めに作成した．
+* `subnet_configuration=...` : このパラメータは，VPCにどのようなサブネットを作るか，を決めている．サブネットの種類には **priavte subnet** と **public subnet** の二種類がある．private subnet は基本的にインターネットとは遮断されたサブネット環境である．インターネットと繋がっていないので，セキュリティは極めて高く，VPC内のサーバーとのみ通信を行えばよいEC2インスタンスは，ここに配置する．Public subnet とはインターネットに繋がったサブネットである．本ハンズオンで作成するサーバーは，外からSSHでログインを行いたいので，Public subnet 内に配置する．
+* `natgateways=0` : これは少し高度な内容なので省略する (興味のある読者は https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html[公式ドキュメンテーション]を参照)．が，**これを0にしておかないと，NAT Gateway の利用料金が発生してしまうので，注意！**
+====
+
+==== Security Group
+
+Security group (SG) は，EC2インスタンスに付与することのできる仮想ファイアーウォールである．例えば，特定のIPアドレスから来た接続を許したり(インバウンド・トラフィック)，逆に特定のIPアドレスへのアクセスを禁止したり(アウトバウンド・トラフィック)することができる．
+
+本ハンズオンでは，SSHによる外部からの接続を許容するため， `sg.add_ingress_rule(peer=ec2.Peer.any_ipv4(), connection=ec2.Port.tcp(22))` により，すべてのIPv4アドレスからのポート22番へのアクセスを許容している．
+
+また，SSHでEC2インスタンスにログインしたのち，インターネットからプログラムなどをダウンロードできるよう， `allow_all_outbound=True` のパラメータを設定している．
+
+[WARNING]
+====
+セキュリティ上の観点からは，SSHの接続は自宅や大学などの特定の地点からの接続のみを許す方が望ましい．
+====
 
 ==== EC2 (Elastic Compute Cloud)
 
+image::imgs/aws_logos/EC2.png[EC2, 100]
+
 EC2 はAWS上に仮想サーバーを立ち上げるサービスである．個々の起動状態にある仮想サーバーのことをインスタンス (instance) と呼ぶ．
 
-EC2には様々なインスタンスタイプがあり，自身のアプリケーションで必要なCPUコア数・メモリーサイズ・ネットワーク速度などに応じて，適切なものを選択することができる．以下に，代表的なインスタンスタイプを挙げる．EC2 のインスタンスタイプのすべてのリストは https://aws.amazon.com/ec2/instance-types/[公式ドキュメンテーション]で見ることができる．
+EC2では用途に応じて様々なインスタンスタイプが提供されている．以下に，代表的なインスタンスタイプの例を挙げる．EC2 のインスタンスタイプのすべてのリストは https://aws.amazon.com/ec2/instance-types/[公式ドキュメンテーション]で見ることができる．
 
-[options="header"] 
+[cols="1,1,1,1,1", options="header"] 
 .EC2 instance types
 |===
 |Instance
@@ -132,12 +236,64 @@ EC2には様々なインスタンスタイプがあり，自身のアプリケ�
 |61
 |-
 |1 GPU (NVIDIA Tesla V100)
+
 |===
 
-このようにCPUは1コアから最大で96コアまで，メモリーは1GBから3000GB以上まで，ネットワークは最大で100Gbpsまで，幅広く選択することができる．また，ディープラーニングなどの用途で，GPU (Graphical processing unit) を搭載したインスタンスタイプも存在する．
+このようにCPUは1コアから96コアまで，メモリーは1GBから3000GB以上まで，ネットワークは最大で100Gbpsまで，幅広く選択することができる．
+また，ディープラーニングなどの用途で，GPU (Graphical processing unit) を搭載したインスタンスタイプも存在する．
 
+EC2 はサーバーの起動時間を秒単位で記録しており，利用料金は使用時間に比例する形で決定される．
+例えば，上の `t2.micro` であれば，1時間あたり$0.0116 という価格設定になっている．
 
-==== VPC
+[TIP]
+====
+上記で t2.micro の $0.0116 / hour という金額は，on-demandインスタンスというタイプを選択した場合の価格である．
+EC2 では他に，Spot instance と呼ばれるインスタンスも存在しする．
+Spot instance は，AWSのデータセンターの負荷が増えた場合，AWSにより強制シャットダウンされる可能性がある，という不便さを抱えているのだが，その分大幅に安い料金設定になっている．
+科学計算で，コストを削減する目的で，このSpot Instanceを使う事例も報告されている (https://arxiv.org/abs/1904.10489[Wu+, 2019])．
+====
 
-==== Security Group
+=== プログラムを実行する
+
+さて，ハンズオンのコードの理解ができたところで，プログラムを実際に実行してみよう．繰り返しになるが， <<handson_01_prep>> での準備ができていることが前提である．
+
+==== Python の依存ライブラリのインストール
+
+まずは，Python の依存ライブラリをインストールする．以下では，Python のライブラリを管理するツールとして， https://docs.python.org/3/library/venv.html[venv] を使用する．
+
+まずは， `handson/01-ec2` のディレクトリに移動しよう．
+
+[source, bash]
+----
+$ cd intro-aws/handson/01-ec2
+----
+
+ディレクトリを移動したら， `venv` で新しい仮想環境を作成し，インストールを実行する．
+
+[source, bash]
+----
+$ python3 -m venv .env
+$ source .env/bin/activate
+$ pip install -r requirements.txt
+----
+
+これで Python の環境構築は完了だ．
+
+[NOTE]
+====
+`venv` の簡単な説明は <<venv_quick_guide>> に記述してある．
+====
+
+==== AWS の認証情報をセットする
+
+AWS CLI および AWS CDK を使うには，AWSの認証鍵が設定されている必要がある．それには，以下のようにして環境変数を設定すればよい．
+
+[source, bash]
+----
+export AWS_ACCESS_KEY_ID=XXXXXX
+export AWS_SECRET_ACCESS_KEY=YYYYYY
+export AWS_DEFAULT_REGION=ap-northeast-1
+----
+
+上の `XXXXXX`, `YYYYYY` としたところは自分の鍵に置き換えるべきである．
 
