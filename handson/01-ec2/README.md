@@ -1,7 +1,6 @@
 # Hands-on #1: Creating a EC2 instance
 
-For the full step-by-step tutorial, see https://tomomano.gitlab.io/intro-aws
-
+**For the full step-by-step tutorial, see https://tomomano.gitlab.io/intro-aws**
 
 ## Prerequisites
 
@@ -54,11 +53,11 @@ export KEY_NAME="HirakeGoma"
 aws ec2 create-key-pair --key-name ${KEY_NAME} --query 'KeyMaterial' --output text > ${KEY_NAME}.pem
 ```
 
-This will create a SSH secret key named `HirakeGoma.pem`. Move this secret key to a place where your computer stores SSH secret keys, such as `.aws/ec2_key_pair/`. After moving the file, be sure to set the correct access permission.
+This will create a SSH secret key named `HirakeGoma.pem`. Move this secret key to a place where your computer stores SSH secret keys, such as `.ssh/`. After moving the file, be sure to set the correct access permission.
 
 ```bash
-mv HirakeGoma.pem ~/.aws/ec2_key_pair/
-chmod 400 ~/.aws/ec2_key_pair/HirakeGoma.pem 
+mv HirakeGoma.pem ~/.ssh/
+chmod 400 ~/.ssh/HirakeGoma.pem 
 ```
 
 ### Deploy
@@ -66,21 +65,16 @@ chmod 400 ~/.aws/ec2_key_pair/HirakeGoma.pem
 To deploy the stack, run
 
 ```bash
-cdk deploy
+cdk deploy -c key_name=$KEY_NAME
 ```
 
 ### Accessing the EC2 server
 
-1. To find the IP address of the deployed server, log in to your AWS console. Then go `EC2` -> `Instances`. Make sure that the correct region is selected.
-
-    <img src="imgs/ec2_console.png" width="500px">
-
-2. Find the instance named `Ec2ProxyServer/XXX`.
-3. Click `Actions` => `Connect`. This will show a window showing a example SSH command to access the server.
-4. Using the command copied above, connect to the server. e.g.
+1. `cdk deploy` command will print the IP address of the instance. Find a line that says `MyfirstEc2.InstancePublicIp = XXXXX`
+1. Using the command copied above, connect to the server. e.g.
 
     ```
-    ssh -i "MrProxy.pem" ec2-user@ec2-52-195-4-144.ap-northeast-1.compute.amazonaws.com
+    ssh -i ~/.ssh/HirakeGoma.pem ec2-user@<IP address>
     ```
 
 ### Destroy
@@ -93,5 +87,5 @@ cdk destroy
 **NOTE**: You can do the same operation from AWS console. Go to `CloudFormation` -> `Stacks`. Find the stack, and delete it.
 
 You should also delete the SSH key pair, which is no longer used.
-1. `rm ~/.aws/ec2_key_pair/HirakeGoma.pem`
+1. `rm ~/.ssh/HirakeGoma.pem`
 2. From the AWS console, go to `EC2` -> `Key pair`. Find the key pair, and delete it.
