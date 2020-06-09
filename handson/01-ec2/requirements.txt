@@ -1,1 +1,1 @@
-aws-cdk.aws-ec2==1.44.0
+aws-cdk.aws-ec2>=1.30.0
