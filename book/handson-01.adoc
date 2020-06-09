@@ -71,8 +71,7 @@ $ ssh -i Ec2SecretKey.pem <user name>@<host name>
 
 [NOTE]
 ====
-SSH コマンドはデフォルトの動作として， `~/.ssh/` のディレクトリにあるファイルをスキャンし，適合する秘密鍵を探してくれる．
-ここに秘密鍵ファイルを置いておけば `-i` オプションは付けなくてもよい．
+SSH コマンドはデフォルトの動作として， `~/.ssh/` のディレクトリにあるファイルをスキャンし， `id_rsa` や `id_ed25519` など，適合するファイル名が存在するとその秘密鍵を使ってログインを試みる．
 ====
 
 ==== ソースコードのダウンロード
@@ -92,7 +91,7 @@ $ git clone git@gitlab.com:tomomano/intro-aws.git
 
 [[handson_01_architecture]]
 .ハンズオン#1で作製するアプリケーションのアーキテクチャ
-image::imgs/handson-01.png[hands-on 01 architecture, 600, align="center"]
+image::imgs/handson-01/app_architecture.png[hands-on 01 architecture, 600, align="center"]
 
 このアプリケーションは，ではまず，**VPC (Virtual Private Cloud)** を使ってプライベートな仮想ネットワーク環境を立ち上げている．
 そのVPCの public subnet の内側に，**EC2 (Elatic Compute Cloud)** の仮想サーバーを配置する．
@@ -106,7 +105,7 @@ image::imgs/handson-01.png[hands-on 01 architecture, 600, align="center"]
 ----
 class MyFirstEc2(core.Stack):
 
-    def __init__(self, scope: core.App, name: str, props: StackProps, **kwargs) -> None:
+    def __init__(self, scope: core.App, name: str, key_name: str, **kwargs) -> None:
         super().__init__(scope, name, **kwargs)
 
         # <1>
@@ -116,14 +115,8 @@ class MyFirstEc2(core.Stack):
             cidr="10.10.0.0/23",
             subnet_configuration=[
                 ec2.SubnetConfiguration(
-                    cidr_mask=24,
                     name="public",
                     subnet_type=ec2.SubnetType.PUBLIC,
-                ),
-                ec2.SubnetConfiguration(
-                    cidr_mask=24,
-                    name="private",
-                    subnet_type=ec2.SubnetType.PRIVATE,
                 )
             ],
             nat_gateways=0,
@@ -148,7 +141,7 @@ class MyFirstEc2(core.Stack):
             vpc=vpc,
             vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
             security_group=sg,
-            key_name=props.key_name
+            key_name=key_name
         )
 ----
 <1> まず最初に，VPCを定義する．
@@ -286,7 +279,7 @@ $ pip install -r requirements.txt
 
 ==== AWS の認証情報をセットする
 
-AWS CLI および AWS CDK を使うには，AWSの認証鍵が設定されている必要がある．それには，以下のようにして環境変数を設定すればよい．
+AWS CLI および AWS CDK を使うには，AWSの認証鍵が設定されている必要がある．以下のようにして環境変数を設定する．
 
 [source, bash]
 ----
@@ -295,5 +288,185 @@ export AWS_SECRET_ACCESS_KEY=YYYYYY
 export AWS_DEFAULT_REGION=ap-northeast-1
 ----
 
-上の `XXXXXX`, `YYYYYY` としたところは自分の鍵に置き換えるべきである．
+上の `XXXXXX`, `YYYYYY` としたところは自分の鍵に置き換えることを忘れずに．
+
+AWS の認証鍵の取得については <<appendix_aws_account>> を参照．コマンドラインでの AWS の認証の設定の仕方は <<aws_cli_install>> を参照．
+
+==== SSH鍵を生成
+
+EC2 インスタンスには SSH を使ってログインする．EC2インスタンスを起動するのにさきがけて，SSHの公開鍵・秘密鍵のペアを準備する必要がある．
+
+以下の aws-cli コマンドにより， `HirakeGoma` という名前のついた鍵を生成する．
+
+[source, bash]
+----
+$ export KEY_NAME="HirakeGoma"
+$ aws ec2 create-key-pair --key-name ${KEY_NAME} --query 'KeyMaterial' --output text > ${KEY_NAME}.pem
+----
+
+上のコマンドを実行すると，現在のディレクトリに `HirakeGoma.pem` というファイルが作成される．これが，サーバーにアクセスするための秘密鍵である． SSH でこの鍵を使うため， `~/.ssh/` のディレクトリに鍵を移動する．さらに，秘密鍵が書き換えられたり第三者に閲覧されないよう，ファイルのアクセス権限を `400` に設定する．
+
+[source, bash]
+----
+$ mv HirakeGoma.pem ~/.ssh/
+$ chmod 400 ~/.ssh/HirakeGoma.pem
+----
+
+==== デプロイを実行
+
+これまでのステップで準備は整った！
+
+早速，アプリケーションをAWSにデプロイしてみよう．
+
+[source, bash]
+----
+$ cdk deploy -c key_name="HirakeGoma"
+----
+
+`-c key_name="HirakeGoma"` というオプションで，先程生成した `HirakeGoma` という名前の鍵を使うよう指定している．
+
+上記のコマンドを実行すると，VPC， EC2 などが実際に展開される．また，コマンドの出力の最後に <<handson_01_cdk_output>> のような出力が得られるはずである．
+
+[[handson_01_cdk_output]]
+.CDKデプロイ実行後の出力
+image::imgs/handson-01/cdk_output.png[cdk output, 700, align="center"]
+
+ここの `InstancePublicIp` として書かれているのが，起動したインスタンスのパブリックIPアドレスである． アドレスはランダムに割り当てられるので，上の画像のアドレスとは異なっているはずである．
+
+早速，SSHで接続してみよう．
+
+[source, bash]
+----
+$ ssh -i ~/.ssh/HirakeGoma.pem ec2-user@<IP address>
+----
+
+`-i` オプションで，先程生成した秘密鍵を指定している． EC2 インスタンスにはデフォルトで `ec2-user` という名前のユーザーが作られている．最後に， `<IP address>` の部分は自分の値で置き換える (`54.238.112.5` など）．
+
+ログインに成功すると，以下のような画面が表示される．リモートのサーバーにログインしているので，プロンプトが `[ec2-user@ip-10-10-1-217 ~]$  ` となっている．
+
+[[handson_01_ssh_login]]
+.SSH で EC2 インスタンスにログイン
+image::imgs/handson-01/ssh_login.png[ssh_login, 700, align="center"]
+
+**おめでとう！これで，めでたくAWS上にEC2仮想サーバーを起動し，リモートからアクセスすることができるようになった！**
+
+せっかくサーバーを起動したので，少し遊んでみよう．
+
+次のコマンドで，CPUの情報を取得することができる．
+
+[source, bash]
+----
+$ cat /proc/cpuinfo
+
+processor	: 0
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 63
+model name	: Intel(R) Xeon(R) CPU E5-2676 v3 @ 2.40GHz
+stepping	: 2
+microcode	: 0x43
+cpu MHz		: 2400.096
+cache size	: 30720 KB
+----
+
+次に，実行中のプロセスやメモリの消費を見てみよう．
+
+[source, bash]
+----
+$  top -n 1
+
+top - 09:29:19 up 43 min,  1 user,  load average: 0.00, 0.00, 0.00
+Tasks:  76 total,   1 running,  51 sleeping,   0 stopped,   0 zombie
+Cpu(s):  0.3%us,  0.3%sy,  0.1%ni, 98.9%id,  0.2%wa,  0.0%hi,  0.0%si,  0.2%st
+Mem:   1009140k total,   270760k used,   738380k free,    14340k buffers
+Swap:        0k total,        0k used,        0k free,   185856k cached
+
+  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND                                                           
+    1 root      20   0 19696 2596 2268 S  0.0  0.3   0:01.21 init                                                              
+    2 root      20   0     0    0    0 S  0.0  0.0   0:00.00 kthreadd                                                          
+    3 root      20   0     0    0    0 I  0.0  0.0   0:00.00 kworker/0:0
+----
+
+`t2.micro` インスタンスなので， 1009140k = 1GB のメモリーがあることがわかる．
+
+使い終わったら，次のコマンドでログアウトする．
+
+[source, bash]
+----
+$ exit
+----
+
+==== AWS コンソールから確認
+
+これまでは，すべてコマンドラインから操作を行ってきた．EC2インスタンスの状態などの情報は，AWS コンソールから確認することもできる．
+
+まず，AWS コンソールにログインする．
+
+ログインしたら， `EC2` -> `Instances` とページを辿る. すると，以下のような画面が得られるはずである．
+
+.EC2 コンソール画面
+image::imgs/handson-01/ec2_console.png[ec2_console, 700, align="center"]
+
+この画面で，インスタンスの状態の確認や，IPアドレスなどを確認することができる．
+
+[WARNING]
+====
+**コンソール右上で，正しいリージョン (今回の場合は ap-northeast-1, Tokyo) が選択されているか，注意する！**
+====
+
+同様に，VPC・SG についてもコンソールから確認することができる．
+
+これらのリソースは，CloudFormation の "スタック" として一括管理されている．
+
+コンソールで `CloudFormation` のページに行ってみよう．
+
+.CloudFormation コンソール画面
+image::imgs/handson-01/cloudformation_console.png[cloudformation console, 700, align="center"]
+
+"MyFirstEc2" という名前のスタックがあることが確認できる．クリックをして中身を見てみると，EC2, VPN などのリソースが紐付いていることがわかる．
+
+==== スタックを削除
+
+これにて，第一回のハンズオンで説明すべき事柄はすべて完了した．
+
+最後に，使わなくなったスタックを削除しよう．
+
+スタックの削除には，２つの方法がある．
+
+１つめの方法は，前節の Cloudformation のコンソール画面で， "Delete" ボタンを押すことである (<<cloudformation_delete>>)．
+
+[[cloudformation_delete]]
+.CloudFormationコンソール画面から，スタックを削除
+image::imgs/handson-01/cloudformation_delete.png[cloudformation delete, 700, align="center"]
+
+２つめの方法は，コマンドラインから行う方法である．
+
+先ほど，デプロイを行ったコマンドラインに戻ろう．そうしたら，
+
+[source, bash]
+----
+$ cdk destroy
+----
+
+と実行する．すると，スタックの削除が始まる．
+
+削除した後は，VPC, EC2 など，すべて跡形もなく消え去っている．
+
+このように，自分の使いたいときにだけ，サーバーを立ち上げ，使い終わったら直ちに削除する，というのが現代のクラウドの正しい使い方である．
+
+[IMPORTANT]
+====
+**スタックの削除は各自で必ず行うこと！** 行わなかった場合，EC2インスタンスの料金が発生し続けることになる！ `t2.micro` は $0.0116 / hour の料金設定なので，一ヶ月起動しつづけると約$8の請求が発生することになる！
+====
+
+
+=== 講義第一回目のまとめ
+
+ここまでが，第一回目の講義の内容である．盛りだくさんの内容であったが，ついてこれたであろうか？
+
+第一回では，クラウドの概要と，なぜクラウドを使うのか，という点を議論した．また，クラウドを学ぶ具体的な題材としてAWSを取り上げ，AWSの概要説明を行った．さらに，ハンズオンではAWS CLI/CDK を使って，自分のマイ・サーバーをAWS上に立ち上げる演習を行った．
+
+ハンズオンなどを通じて，いかに簡単に(たった数行のコマンドで！)仮想サーバーを立ち上げたり，削除したりすることができるか，体験することができただろう．このように，**ダイナミックに計算リソースを拡大・縮小をできることが，クラウドの最も本質的な側面であると，筆者は考えている**．
+
+次回以降の講義では，今回学んだクラウドの技術を基に，より現実的な問題を解くことを体験してもらう．お楽しみに！
 
