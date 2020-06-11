@@ -1,2 +1,58 @@
 == Hands-on #2: AWSでディープラーニングの計算を走らせる
 
+ハンズオン第二回では，前章で学んだ
+
+ハンズオンのソースコードはこちらのリンクに置いてある => https://gitlab.com/tomomano/intro-aws/handson/01-ec2
+
+
+ログイン
+
+[source, bash]
+----
+$ ssh -i ~/.ssh/HirakeGoma.pem -L localhost:8888:localhost:8888 ubuntu@<IP address>
+----
+
+Jupyter notebook の設定
+
+[source, bash]
+----
+$ jupyter notebook password
+Enter password: 
+Verify password: 
+[NotebookPasswordApp] Wrote hashed password to /home/ubuntu/.jupyter/jupyter_notebook_config.json
+----
+
+[source, bash]
+----
+$ cd ~
+$ mkdir ssl
+$ cd ssl
+$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout mykey.key -out mycert.pem
+Generating a RSA private key
+.......................................+++++
+.............................................................+++++
+writing new private key to 'mykey.key'
+-----
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Country Name (2 letter code) [AU]:JP
+State or Province Name (full name) [Some-State]:Tokyo
+Locality Name (eg, city) []:.
+Organization Name (eg, company) [Internet Widgits Pty Ltd]:.
+Organizational Unit Name (eg, section) []:.
+Common Name (e.g. server FQDN or YOUR name) []:.
+Email Address []:.
+----
+
+
+サーバー起動
+
+[source, bash]
+----
+$ jupyter notebook --certfile=~/ssl/mycert.pem --keyfile ~/ssl/mykey.key
+----
