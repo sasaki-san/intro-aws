@@ -1,4 +1,4 @@
-== Hands-on #1: Launching EC2 instance
+== Hands-on #1: 初めてのEC2インスタンスを起動する
 
 ハンズオンの第一回では，CDKを使ってEC2のインスタンス(仮想サーバー)を起動し，SSHでサーバーにログインする，という演習を行う．
 このハンズオンを終えれば，あなたは自分だけのサーバーをAWS上に立ち上げ，自由に計算を走らせることができるようになるのである！
@@ -99,7 +99,7 @@ image::imgs/handson-01/app_architecture.png[hands-on 01 architecture, 600, align
 
 上記のようなアプリケーションを，CDKを使って構築する．
 
-早速ではあるが，今回のハンズオンで使用するプログラムを見てみよう (https://gitlab.com/tomomano/intro-aws/handson/01-ec2[handson/01-ec2/app.py])．
+早速ではあるが，今回のハンズオンで使用するプログラムを見てみよう (https://gitlab.com/tomomano/intro-aws/-/tree/master/handson/01-ec2/app.py[handson/01-ec2/app.py])．
 
 [source, python]
 ----
@@ -189,7 +189,7 @@ image::imgs/aws_logos/EC2.png[EC2, 100]
 
 EC2 はAWS上に仮想サーバーを立ち上げるサービスである．個々の起動状態にある仮想サーバーのことをインスタンス (instance) と呼ぶ．
 
-EC2では用途に応じて様々なインスタンスタイプが提供されている．以下に，代表的なインスタンスタイプの例を挙げる．EC2 のインスタンスタイプのすべてのリストは https://aws.amazon.com/ec2/instance-types/[公式ドキュメンテーション]で見ることができる．
+EC2では用途に応じて様々なインスタンスタイプが提供されている．以下に，代表的なインスタンスタイプの例を挙げる(2020/06時点での情報)．EC2 のインスタンスタイプのすべてのリストは https://aws.amazon.com/ec2/instance-types/[公式ドキュメンテーション]で見ることができる．
 
 [cols="1,1,1,1,1", options="header"] 
 .EC2 instance types
@@ -198,51 +198,54 @@ EC2では用途に応じて様々なインスタンスタイプが提供され�
 |vCPU
 |Memory (GiB)
 |Network bandwidth (Gbps)
-|Note
+|Price per hour ($)
 
 |t2.micro
 |1
 |1
 |-
+|0.0116
+
+|t2.small
+|1
+|2
 |-
+|0.023
+
+|t2.medium
+|2
+|4
+|-
+|0.0464
 
 |c5.24xlarge
 |96
 |192
 |25
-|Compute optimized
+|4.08
 
 |c5n.18xlarge
 |72
 |192
 |100
-|Network optimized
+|3.888
 
 |x1e.16xlarge
 |64
 |1952
 |10
-|Memory optimized
-
-|p3.2xlarge
-|8
-|61
-|-
-|1 GPU (NVIDIA Tesla V100)
+|13.344
 
 |===
 
-このようにCPUは1コアから96コアまで，メモリーは1GBから3000GB以上まで，ネットワークは最大で100Gbpsまで，幅広く選択することができる．
-また，ディープラーニングなどの用途で，GPU (Graphical processing unit) を搭載したインスタンスタイプも存在する．
-
-EC2 はサーバーの起動時間を秒単位で記録しており，利用料金は使用時間に比例する形で決定される．
-例えば，上の `t2.micro` であれば，1時間あたり$0.0116 という価格設定になっている．
+このようにCPUは1コアから96コアまで，メモリーは1GBから3000GB以上まで，ネットワークは最大で100Gbpsまで，幅広く選択することができる．また，時間あたりの料金は，CPU・メモリーの占有数にほぼ比例する形で増加する．EC2 はサーバーの起動時間を秒単位で記録しており，**利用料金は使用時間に比例する形で決定される**．例えば， `t2.micro` のインスタンスを10時間起動した場合，0.016 * 10 = 0.16 ドルの料金が発生する．
 
 [TIP]
 ====
 上記で t2.micro の $0.0116 / hour という金額は，on-demandインスタンスというタイプを選択した場合の価格である．
 EC2 では他に，Spot instance と呼ばれるインスタンスも存在しする．
-Spot instance は，AWSのデータセンターの負荷が増えた場合，AWSにより強制シャットダウンされる可能性がある，という不便さを抱えているのだが，その分大幅に安い料金設定になっている．
+Spot instance は，AWSのデータセンターの負荷が増えた場合，AWSの判断により強制シャットダウンされる可能性がある，という不便さを抱えているのだが，その分大幅に安い料金設定になっている．
+いうなれば，"すき間の空きCPUで計算を行う"といった格好である．
 科学計算で，コストを削減する目的で，このSpot Instanceを使う事例も報告されている (https://arxiv.org/abs/1904.10489[Wu+, 2019])．
 ====
 
@@ -389,7 +392,31 @@ Swap:        0k total,        0k used,        0k free,   185856k cached
 
 `t2.micro` インスタンスなので， 1009140k = 1GB のメモリーがあることがわかる．
 
-使い終わったら，次のコマンドでログアウトする．
+今回起動したインスタンスには Python2 はインストール済みだが， Python 3 は入っていない．
+最後の課題として， Python 3.6 のインストールを行ってみよう．
+インストールは簡単である．
+
+[source, bash]
+----
+$ sudo yum update -y
+$ sudo yum install -y python36 python36-pip
+----
+
+インストールしたPythonを起動してみよう．
+
+[source, bash]
+----
+$ python3
+Python 3.6.10 (default, Feb 10 2020, 19:55:14)
+[GCC 4.8.5 20150623 (Red Hat 4.8.5-28)] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>>
+----
+
+Python のインタープリタが起動した！
+
+さて，サーバーでのお遊びはこんなところにしておこう (興味があれば各自いろいろと試してみると良い）．
+次のコマンドでログアウトする．
 
 [source, bash]
 ----
@@ -398,16 +425,20 @@ $ exit
 
 ==== AWS コンソールから確認
 
-これまでは，すべてコマンドラインから操作を行ってきた．EC2インスタンスの状態などの情報は，AWS コンソールから確認することもできる．
+これまでは，すべてコマンドラインからEC2に関連する諸々の操作を行ってきた．
+EC2インスタンスの状態を確認したり，サーバーをシャットダウンするなどの操作は，AWS コンソールから実行することもできる．
+軽くこれを紹介しよう．
 
 まず，AWS コンソールにログインする．
 
-ログインしたら， `EC2` -> `Instances` とページを辿る. すると，以下のような画面が得られるはずである．
+ログインしたら， `Services` から `EC2` を検索(選択)する．
+次に，左のサイドバーの `Instances` とページを辿る.
+すると， <<aws_ec2_console>> のような画面が得られるはずである．
+この画面で，自分のアカウントの管理下にあるインスタンスを確認することができる．
 
+[[aws_ec2_console]]
 .EC2 コンソール画面
 image::imgs/handson-01/ec2_console.png[ec2_console, 700, align="center"]
-
-この画面で，インスタンスの状態の確認や，IPアドレスなどを確認することができる．
 
 [WARNING]
 ====
@@ -416,19 +447,22 @@ image::imgs/handson-01/ec2_console.png[ec2_console, 700, align="center"]
 
 同様に，VPC・SG についてもコンソールから確認することができる．
 
-これらのリソースは，CloudFormation の "スタック" として一括管理されている．
+前章で CloudFormation について触れたが，今回デプロイしたアプリケーションも，CloudFormation の "スタック" として管理されている．
+スタック (stack) とは，AWSリソースの集合のことを指す．
+今回の場合は，VPC/EC2/SG などがスタックの中に含まれている．
 
-コンソールで `CloudFormation` のページに行ってみよう．
+コンソールで `CloudFormation` のページに行ってみよう (<<aws_cloudformation_console>>)．
 
+[[aws_cloudformation_console]]
 .CloudFormation コンソール画面
 image::imgs/handson-01/cloudformation_console.png[cloudformation console, 700, align="center"]
 
-"MyFirstEc2" という名前のスタックがあることが確認できる．クリックをして中身を見てみると，EC2, VPN などのリソースが紐付いていることがわかる．
+"MyFirstEc2" という名前のスタックがあることが確認できる．
+クリックをして中身を見てみると，EC2, VPN などのリソースがこのスタックに紐付いていることがわかる．
 
 ==== スタックを削除
 
 これにて，第一回のハンズオンで説明すべき事柄はすべて完了した．
-
 最後に，使わなくなったスタックを削除しよう．
 
 スタックの削除には，２つの方法がある．
@@ -459,6 +493,38 @@ $ cdk destroy
 **スタックの削除は各自で必ず行うこと！** 行わなかった場合，EC2インスタンスの料金が発生し続けることになる！ `t2.micro` は $0.0116 / hour の料金設定なので，一ヶ月起動しつづけると約$8の請求が発生することになる！
 ====
 
+また，本ハンズオンのために作成したSSH鍵ペアも不要なので，削除しておく．
+
+まず，EC2側に登録してある公開鍵を削除する．
+これも，コンソールおよびコマンドラインの２つの方法で実行できる．
+
+コンソールから実行するには， `EC2` の画面に行き，左のサイドバーの `Key Pairs` を選択．
+鍵の一覧が表示されるので， `HirakeGoma` とある鍵にチェックを入れ，画面右上の `Actions` から， `Delete` を実行 (<<delete_ec2_key_pair>>)．
+
+[[delete_ec2_key_pair]]
+.EC2でSSH鍵ペアを削除
+image::imgs/handson-01/ec2_keypair_console.png[ec2_keypair_console, 700, align="center"]
+
+コマンドラインから実行するには，以下のコマンドを使う．
+
+[source, bash]
+----
+$ aws ec2 delete-key-pair --key-name "HirakeGoma"
+----
+
+最後に，手元のコンピュータから鍵を削除する．
+
+[source, bash]
+----
+$ rm -f ~/.ssh/HirakeGoma.pem
+----
+
+これで，クラウドの片付けもすべて終了だ．
+
+[TIP]
+====
+なお，頻繁にEC2インスタンスを起動したりする場合は，いちいちSSH鍵を削除する必要はない．
+====
 
 === 講義第一回目のまとめ
 
