@@ -80,10 +80,11 @@ SSH コマンドはデフォルトの動作として， `~/.ssh/` のディレ�
 
 [source, bash]
 ----
-$ git clone git@gitlab.com:tomomano/intro-aws.git
+# with https
+$ git clone https://gitlab.com/tomomano/intro-aws.git
 ----
 
-あるいは， https://gitlab.com/tomomano/intro-aws のページに行って，右上のダウンロードボタンから .zip アーカイブをダウンロードすることもできる．
+あるいは， https://gitlab.com/tomomano/intro-aws のページに行って，右上のダウンロードボタンからダウンロードすることもできる．
 
 === アプリケーションの説明
 

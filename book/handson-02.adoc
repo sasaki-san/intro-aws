@@ -22,7 +22,7 @@ image::imgs/handson-02/handson-02-architecture.png[hands-on 01 architecture, 600
 * ディープラーニングに使うプログラムが予めインストールされたDLAMI (後述) を使用．
 * SSHにポートフォワーディングのオプションつけてサーバーに接続し，サーバーで起動しているJupyter notebook (後述) を使ってプログラムを書いたり実行したりする．
 
-ハンズオンで使用するプログラムのコードをみてみよう (https://gitlab.com/tomomano/intro-aws/-/tree/master/handson/02-ec2-dnn/app.py[handson/02-ec2-dnn/app.py])．コードも，第一回目とほとんど共通である．変更点のみ解説を行う．
+ハンズオンで使用するプログラムのコードをみてみよう (https://gitlab.com/tomomano/intro-aws/-/tree/master/handson/02-ec2-dnn/app.py[/handson/02-ec2-dnn/app.py])．コードも，第一回目とほとんど共通である．変更点のみ解説を行う．
 
 [source, python]
 ----
@@ -264,10 +264,9 @@ $ cd ~
 $ jupyter notebook --certfile=~/ssl/mycert.pem --keyfile ~/ssl/mykey.key
 ----
 
-==== PyTorch始めの一歩
+=== PyTorchはじめの一歩
 
 https://pytorch.org/[PyTorch] は Facebook AI Research LAB (FAIR) が中心となって開発を進めている，オープンソースのディープラーニングのライブラリである．PyTorch は 有名な例で言えば Tesla 社の自動運転プロジェクトなどで使用されており，2020/06時点において最も人気の高いディープラーニングライブラリの一つである．
-
 
 [TIP]
 ====
@@ -290,7 +289,10 @@ image::imgs/handson-02/jupyter_new.png[jupyter_new, 700, align="center"]
 
 [NOTE]
 ====
-TensorFlow や mxnet などの他のライブラリを使いたければ，該当する環境を選択する．
+完成したJupyter notebook が https://gitlab.com/tomomano/intro-aws/-/tree/master/handson/02-ec2-dnn/pytorch_get_started.ipynb[/handson/02-ec2-dnn/pytorch_get_started.ipynb] である．
+Jupyter の画面右上の "Upload" から，このファイルをアップロードして，コードを走らせることができる．
+
+しなしながら，勉強の時にはコードはすべて自分の手で打つこと(いわゆる写経)が，記憶に残りやすくより効果的である，というのが筆者の意見である．
 ====
 
 [NOTE]
@@ -443,5 +445,12 @@ PyTorch において， GPU での演算は asynchronous (非同期) で実行�
 ====
 
 上記のベンチマークから，GPUを用いることで，**約10倍のスピードアップ**を実現することができた．スピードアップの割合は，演算の種類や行列のサイズに依存する．行列積は，そのなかでも最も速度向上が見込まれる演算の一つである．
+
+
+=== 実践ディープラーニング! MNIST文字認識タスク
+
+ここまで，AWS上でディープラーニングの計算のするための概念や前提知識をながながと説明してきたが，ついにここからディープラーニングの計算を実際に走らせてみる．
+
+特にここでは，機械学習のタスクで最も初歩的かつ有名な **MNIST データセットを使った数字認識**を行う．
 
 
