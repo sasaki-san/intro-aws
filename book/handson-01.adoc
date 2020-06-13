@@ -414,6 +414,7 @@ Type "help", "copyright", "credits" or "license" for more information.
 ----
 
 Python のインタープリタが起動した！
+`Ctrl` + `D` あるいは `exit()` と入力することで，インタープリターを閉じることができる．
 
 さて，サーバーでのお遊びはこんなところにしておこう (興味があれば各自いろいろと試してみると良い）．
 次のコマンドでログアウトする．
