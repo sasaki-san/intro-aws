@@ -80,10 +80,11 @@ SSH コマンドはデフォルトの動作として， `~/.ssh/` のディレ�
 
 [source, bash]
 ----
-$ git clone git@gitlab.com:tomomano/intro-aws.git
+# with https
+$ git clone https://gitlab.com/tomomano/intro-aws.git
 ----
 
-あるいは， https://gitlab.com/tomomano/intro-aws のページに行って，右上のダウンロードボタンから .zip アーカイブをダウンロードすることもできる．
+あるいは， https://gitlab.com/tomomano/intro-aws のページに行って，右上のダウンロードボタンからダウンロードすることもできる．
 
 === アプリケーションの説明
 
@@ -414,6 +415,7 @@ Type "help", "copyright", "credits" or "license" for more information.
 ----
 
 Python のインタープリタが起動した！
+`Ctrl` + `D` あるいは `exit()` と入力することで，インタープリターを閉じることができる．
 
 さて，サーバーでのお遊びはこんなところにしておこう (興味があれば各自いろいろと試してみると良い）．
 次のコマンドでログアウトする．
@@ -460,6 +462,7 @@ image::imgs/handson-01/cloudformation_console.png[cloudformation console, 700, a
 "MyFirstEc2" という名前のスタックがあることが確認できる．
 クリックをして中身を見てみると，EC2, VPN などのリソースがこのスタックに紐付いていることがわかる．
 
+[[handson_01_delete_stack]]
 ==== スタックを削除
 
 これにて，第一回のハンズオンで説明すべき事柄はすべて完了した．
