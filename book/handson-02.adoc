@@ -165,7 +165,7 @@ $ cdk deploy -c key_name="HirakeGoma"
 .CDKデプロイ実行後の出力
 image::imgs/handson-02/cdk_output.png[cdk output, 700, align="center"]
 
-==== ログイン
+=== ログイン
 
 早速，デプロイしたインスタンスにSSHでログインしてみよう．
 
@@ -181,7 +181,7 @@ $ ssh -i ~/.ssh/HirakeGoma.pem -L localhost:8931:localhost:8888 ec2-user@<IP add
 リモートサーバーのポート8888には，後述する Jupyter notebook が起動している．
 したがって，ローカルマシンの `localhost:8931` にアクセスすることで，リモートサーバーの Jupyter notebook にアクセスすることができるのである (このようなSSHによる接続方式を**トンネル接続**と呼ぶ)．
 
-ポートフォワーディングについて混乱した読者は https://medium.com/@apbetahouse45/how-to-run-jupyter-notebooks-on-remote-server-part-1-ssh-a2be0232c533[このブログ記事] などを読むとよい．
+ポートフォワーディングについて混乱した読者は，より詳しい解説が https://medium.com/@apbetahouse45/how-to-run-jupyter-notebooks-on-remote-server-part-1-ssh-a2be0232c533[このブログ記事] にある．
 
 [NOTE]
 ====
@@ -206,7 +206,7 @@ $ nvidia-smi
 .nvidia-smi の出力
 image::imgs/handson-02/nvidia-smi.png[nvidia-smi, 700, align="center"]
 
-==== Jupyter notebook の起動
+=== Jupyter notebook の起動
 
 https://jupyter.org/[Jupyter notebook] とは，インタラクティブに Python のプログラムを書いたり実行したりするためのツールである．Jupyter は GUIとしてウェブブラウザを介してアクセスする形式をとっており，まるでノートを書くように，プロットやテーブルのデータも美しく表示することができる (<<handson_02_welcome_jupyter>>)．Python に慣れている読者は，きっと一度は使ったことがあるだろう．
 
@@ -215,84 +215,46 @@ https://jupyter.org/[Jupyter notebook] とは，インタラクティブに Pyth
 image::imgs/handson-02/welcome_to_jupyter.png[welcome to jupyter, 700, align="center"]
 
 このハンズオンでは， Jupyter notebook を使ってディープラーニングのプログラムを書いたり実行していく．
-そのために，まずは Jupyter の設定を行う必要がある (https://docs.aws.amazon.com/dlami/latest/devguide/setup-jupyter.html[参考])．
+DLAMI には既に Jupyter がインストールされているので，特段の設定なしに使い始めることができる．
 
-
-Jupyter notebook の設定
-
-[source, bash]
-----
-$ jupyter notebook password
-Enter password: 
-Verify password: 
-[NotebookPasswordApp] Wrote hashed password to /home/ubuntu/.jupyter/jupyter_notebook_config.json
-----
+早速， Jupyter を起動しよう． SSHでログインした先のEC2インスタンスで，次のコマンドを実行すればよい．
 
 [source, bash]
 ----
-$ cd ~
-$ mkdir ssl
-$ cd ssl
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout mykey.key -out mycert.pem
-Generating a RSA private key
-.......................................+++++
-.............................................................+++++
-writing new private key to 'mykey.key'
------
-You are about to be asked to enter information that will be incorporated
-into your certificate request.
-What you are about to enter is what is called a Distinguished Name or a DN.
-There are quite a few fields but you can leave some blank
-For some fields there will be a default value,
-If you enter '.', the field will be left blank.
------
-Country Name (2 letter code) [AU]:JP
-State or Province Name (full name) [Some-State]:Tokyo
-Locality Name (eg, city) []:.
-Organization Name (eg, company) [Internet Widgits Pty Ltd]:.
-Organizational Unit Name (eg, section) []:.
-Common Name (e.g. server FQDN or YOUR name) []:.
-Email Address []:.
+$ cd ~ # go to home directory
+$ jupyter notebook
 ----
 
+このコマンドを実行すると， <<handson_02_jupyter_launch>> のような出力が確認できるだろう．
+この出力から，Jupyter のサーバーが EC2 インスタンスの `localhost:8888` というアドレスに起動していることがわかる．
+また， `localhost:8888` に続く `?token=XXXXXXX` は，アクセスに使うための一時的なトークンである．
 
-サーバー起動
+[[handson_02_jupyter_launch]]
+.Jupyter notebook サーバーを起動
+image::imgs/handson-02/jupyter_launch.png[jupyter launch, 700, align="center"]
 
-[source, bash]
+先ほど，ポートフォワーディングのオプションをつけてSSH接続をしているので， Jupyter の起動している `localhost:8888` には，ローカルマシンの `localhost:8931` からアクセスすることができる．
+
+したがって，ローカルマシンから Jupyter にアクセスするには，ウェブブラウザ (Chrome, FireFox など)から次のアドレスにアクセスすれば良い．
+
+[source]
 ----
-$ cd ~
-$ jupyter notebook --certfile=~/ssl/mycert.pem --keyfile ~/ssl/mykey.key
+http://localhost:8931/?token=XXXXXXXXXX
 ----
 
-=== PyTorchはじめの一歩
+`?token=XXXXXX` の部分は，上で Jupyter を起動したときに発行されたトークンの値に置き換える．
 
-https://pytorch.org/[PyTorch] は Facebook AI Research LAB (FAIR) が中心となって開発を進めている，オープンソースのディープラーニングのライブラリである．PyTorch は 有名な例で言えば Tesla 社の自動運転プロジェクトなどで使用されており，2020/06時点において最も人気の高いディープラーニングライブラリの一つである．
+上のアドレスにアクセスすると， Jupyter のホーム画面が起動するはずである (<<handson_02_jupyter_home>>)．
+これで， Jupyter の準備が整った！
+
+[[handson_02_jupyter_home]]
+.Jupyter ホーム画面
+image::imgs/handson-02/jupyter_home.png[jupyter home, 700, align="center"]
 
 [TIP]
 ====
-PyTorch の歴史のお話
-
-Facebook は PyTorch の他に Caffe2 と呼ばれるディープラーニングのフレームワークを開発していた (初代Caffee は UC Berkley の博士学生だった Yangqing Jia によって創られた)．
-Caffe2 は 2018年に PyTorch プロジェクトに合併された．
-
-また，2019年12月，日本の Preferred Networks 社が開発していた https://chainer.org/[Chainer] も，開発を終了し，PyTorchの開発チームと協業していくことが発表された (https://chainer.org/announcement/2019/12/05/released-v7-ja.html[プレスリリース])． 
-PyTorch には，開発統合前から Chainer からインスパイアされた API がいくつもあり， Chainer の DNA は今も PyTorch に引き継がれているのである...!
-====
-
-本格的なディープラーニングの計算に移る前に， PyTorch ライブラリを少し触ってみよう．
-
-まずは，新しいノートブックを作成する．Jupyterのホーム画面の右上の "New" から，"conda_pytorch_p36" という環境を選択する (<<handson_02_jupyeter_new>>)．
-
-[[handson_02_jupyeter_new]]
-.新規ノートブックの作成． "conda_pytorch_p36" の環境を選択する．
-image::imgs/handson-02/jupyter_new.png[jupyter_new, 700, align="center"]
-
-[NOTE]
-====
-完成したJupyter notebook が https://gitlab.com/tomomano/intro-aws/-/tree/master/handson/02-ec2-dnn/pytorch_get_started.ipynb[/handson/02-ec2-dnn/pytorch_get_started.ipynb] である．
-Jupyter の画面右上の "Upload" から，このファイルをアップロードして，コードを走らせることができる．
-
-しなしながら，勉強の時にはコードはすべて自分の手で打つこと(いわゆる写経)が，記憶に残りやすくより効果的である，というのが筆者の意見である．
+DLAMI の https://docs.aws.amazon.com/dlami/latest/devguide/setup-jupyter-config.html[公式ドキュメンテーション] では，自分で指定したパスワードとSSLを有効化することを推奨している．
+本ハンズオンでは時間の節約のためにスキップしているが，今後個人で使うときはより強固にセキュリティを設定することを推奨する．
 ====
 
 [NOTE]
@@ -307,7 +269,38 @@ Jupyter notebook の使い方(超簡易版)
 ショートカットの一覧などは https://towardsdatascience.com/jypyter-notebook-shortcuts-bf0101a98330[このブログ] が参考になる．
 ====
 
+=== PyTorchはじめの一歩
+
+https://pytorch.org/[PyTorch] は Facebook AI Research LAB (FAIR) が中心となって開発を進めている，オープンソースのディープラーニングのライブラリである．
+PyTorch は 有名な例で言えば Tesla 社の自動運転プロジェクトなどで使用されており，2020/06時点において最も人気の高いディープラーニングライブラリの一つである．
+本ハンズオンでは， PyTorch を使ってディープラーニングの実践を行う．
+
+[TIP]
+====
+PyTorch の歴史のお話
+
+Facebook は PyTorch の他に Caffe2 と呼ばれるディープラーニングのフレームワークを開発していた (初代Caffee は UC Berkley の博士学生だった Yangqing Jia によって創られた)．
+Caffe2 は 2018年に PyTorch プロジェクトに合併された．
+
+また，2019年12月，日本の Preferred Networks 社が開発していた https://chainer.org/[Chainer] も，開発を終了し，PyTorchの開発チームと協業していくことが発表された (https://chainer.org/announcement/2019/12/05/released-v7-ja.html[プレスリリース])． 
+PyTorch には，開発統合前から Chainer からインスパイアされた API がいくつもあり， Chainer の DNA は今も PyTorch に引き継がれているのである...!
+====
+
+本格的なディープラーニングの計算に移る前に， PyTorch ライブラリを少し触ってみよう．
+
+まずは，新しいノートブックを作成する．
+Jupyterのホーム画面の右上の "New" から，"conda_pytorch_p36" という環境を選択する (<<handson_02_jupyeter_new>>)．
+"conda_pytorch_p36" の仮想環境には， PyTorch がインストール済みである．
+
+[[handson_02_jupyeter_new]]
+.新規ノートブックの作成． "conda_pytorch_p36" の環境を選択する．
+image::imgs/handson-02/jupyter_new.png[jupyter_new, 700, align="center"]
+
 次のようなプログラムを書いてみよう (<<handson_02_jupyeter_pytorch>>)．
+
+[[handson_02_jupyeter_pytorch]]
+.PyTorch始めの一歩
+image::imgs/handson-02/jupyter_pytorch.png[jupyter_pytorch, 700, align="center"]
 
 まずは， PyTorch をインポートする．さらに，GPUが使える環境にあるか，確認する．
 
@@ -347,7 +340,7 @@ y = torch.ones_like(x, device="cuda")
 x = x.to("cuda")
 ----
 
-そして，行列 `x` と `y` の加算を，**GPU**上で実行する．
+そして，行列 `x` と `y` の加算を，**GPU上で実行する**．
 
 [source, python, linenums]
 ----
@@ -379,12 +372,15 @@ tensor([[1.6896, 1.2428, 1.3269],
         [1.9764, 1.5881, 1.0203]])
 ----
 
-
-[[handson_02_jupyeter_pytorch]]
-.PyTorch始めの一歩
-image::imgs/handson-02/jupyter_pytorch.png[jupyter_pytorch, 700, align="center"]
-
 以上の例は， GPU を使った計算の初歩の初歩であるが，雰囲気はつかめただろうか？ CPU と GPU で明示的にデータを交換するのが肝である．この例は，たった 3x3 の行列の足し算なので，GPUを使う意味はまったくないが，これが数千，数万のサイズの行列になった時，GPUは格段の威力を発揮する．
+
+[NOTE]
+====
+完成した Jupyter notebook は https://gitlab.com/tomomano/intro-aws/-/tree/master/handson/02-ec2-dnn/pytorch_get_started.ipynb[/handson/02-ec2-dnn/pytorch/pytorch_get_started.ipynb] にある．
+Jupyter の画面右上の "Upload" から，このファイルをアップロードして，コードを走らせることが可能である．
+
+しなしながら，勉強の時にはコードはすべて自分の手で打つことが，記憶に残りやすくより効果的である，というのが筆者の意見である．
+====
 
 === CPU vs GPU の簡易ベンチマーク
 
@@ -440,17 +436,18 @@ PyTorch において， GPU での演算は asynchronous (非同期) で実行�
 [TIP]
 ====
 このベンチマークでは， `dtype=torch.float32` と指定することで，32bitの浮動小数点型を用いている．ディープラーニングの学習および推論の計算には，32bit型，場合によっては16bit型が使われるのが一般的である．これの主な理由として，教師データやミニバッチに起因するノイズが，浮動小数点の精度よりも大きいことがあげられる．32bit/16bit を採用することで，メモリー消費を抑えたり，計算速度の向上が達成できる．
-
-一方，分子動力学シミュレーションなどでは倍精度浮動小数点型(double型)が必要になる場合がある．
 ====
 
 上記のベンチマークから，GPUを用いることで，**約10倍のスピードアップ**を実現することができた．スピードアップの割合は，演算の種類や行列のサイズに依存する．行列積は，そのなかでも最も速度向上が見込まれる演算の一つである．
 
 
-=== 実践ディープラーニング! MNIST文字認識タスク
+=== 実践ディープラーニング! MNIST手書き数字認識タスク
 
-ここまで，AWS上でディープラーニングの計算のするための概念や前提知識をながながと説明してきたが，ついにここからディープラーニングの計算を実際に走らせてみる．
+ここまで，AWS上でディープラーニングの計算をするための概念や前提知識をながながと説明してきたが，ついにここからディープラーニングの計算を実際に走らせてみる．
 
-特にここでは，機械学習のタスクで最も初歩的かつ有名な **MNIST データセットを使った数字認識**を行う．
+ここでは，機械学習のタスクで最も初歩的かつ有名な **MNIST データセットを使った数字認識**を扱う．0から9までの手書きの数字の画像が与えられ，その数字が何の数字なのかを当てる，というシンプルなタスクである．
+
+
+
 
 
