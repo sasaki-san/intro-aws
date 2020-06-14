@@ -445,9 +445,193 @@ PyTorch において， GPU での演算は asynchronous (非同期) で実行�
 
 ここまで，AWS上でディープラーニングの計算をするための概念や前提知識をながながと説明してきたが，ついにここからディープラーニングの計算を実際に走らせてみる．
 
-ここでは，機械学習のタスクで最も初歩的かつ有名な **MNIST データセットを使った数字認識**を扱う．0から9までの手書きの数字の画像が与えられ，その数字が何の数字なのかを当てる，というシンプルなタスクである．
+ここでは，機械学習のタスクで最も初歩的かつ有名な **MNIST データセットを使った数字認識**を扱う (<<handson_02_mnist_examples>>)．
+0から9までの手書きの数字の画像が与えられ，その数字が何の数字なのかを当てる，というシンプルなタスクである．
+
+[[handson_02_mnist_examples]]
+.MNIST 手書き数字データセット
+image::imgs/handson-02/mnist_examples.png[mnist_examples, 500, align="center"]
+
+今回は， MNIST 文字認識タスクを，**畳み込みニューラルネットワーク (Convolutional Neural Network; CNN)** を使って解く．
+ソースコードは https://gitlab.com/tomomano/intro-aws/-/tree/master/handson/02-ec2-dnn/pytorch_get_started/[/handson/02-ec2-dnn/pytorch/] にある `mnist.ipynb` と `simple_mnist.py` である．
+なお，このプログラムは， https://github.com/pytorch/examples/tree/master/mnist[PyTorch の公式 Example Project 集] を参考に，多少の改変を行ったものである．
+
+まず最初に，カスタムのクラスや関数が定義された `simple_mnist.py` をアップロードしよう．
+画面右上の "Upload" ボタンをクリックし，ファイルを選択すればよい．
+この Python プログラムの中に，CNN のモデルや，学習の各イテレーションにおけるパラメータの更新などが記述されている．
+今回は，この中身を説明することはしないが，興味のある読者は，自分でソースコードを読んでみるとよい．
+
+`simple_mnist.py` をアップロードできたら，次に新しい notebook を作成しよう．
+"conda_pytorch_p36" の環境を選択することを忘れずに．
+
+新しいノートブックが起動したら，まず最初に，必要なライブラリをインポートしよう．
+
+[source, python, linenums]
+----
+import torch
+import torch.optim as optim
+import torchvision
+from torchvision import datasets, transforms
+from matplotlib import pyplot as plt
+
+# custom functions and classes
+from simple_mnist import Model, train, test
+----
+
+https://pytorch.org/docs/stable/torchvision/index.html[torchvision] パッケージには，MNIST データセットをロードするなどの便利な関数が含まれている．
+また，今回のハンズオンで使うカスタムのクラス・関数 (`Model`, `train`, `test`) のインポートを行っている．
+
+次に，MNIST テストデータをダウンロードしよう．
+同時に，画像データの輝度の正規化も行っている．
+
+[source, python, linenums]
+----
+transf = transforms.Compose([transforms.ToTensor(),
+                             transforms.Normalize((0.1307,), (0.3081,))])
+
+trainset = datasets.MNIST(root='./data', train=True, download=True, transform=transf)
+trainloader = torch.utils.data.DataLoader(trainset, batch_size=64, shuffle=True)
+
+testset = datasets.MNIST(root='./data', train=False, download=True, transform=transf)
+testloader = torch.utils.data.DataLoader(trainset, batch_size=1000, shuffle=True)
+----
+
+今回扱う MNIST データは 28x28 ピクセルの正方形の画像(モノクロ)と，それぞれのラベル(0 - 9 の数字)の組で構成されている．
+いくつかのデータを抽出して，可視化してみよう．
+<<handson_02_mnist_ground_truth>> のような出力が得られるはずである．
+
+[source, python, linenums]
+----
+examples = iter(testloader)
+example_data, example_targets = examples.next()
+
+print("Example data size:", example_data.shape)
+
+fig = plt.figure(figsize=(10,4))
+for i in range(10):
+    plt.subplot(2,5,i+1)
+    plt.tight_layout()
+    plt.imshow(example_data[i][0], cmap='gray', interpolation='none')
+    plt.title("Ground Truth: {}".format(example_targets[i]))
+    plt.xticks([])
+    plt.yticks([])
+plt.show()
+----
+
+[[handson_02_mnist_ground_truth]]
+.MNIST の手書き数字画像とその教師ラベル
+image::imgs/handson-02/mnist_ground_truth.png[mnist_ground_truth, 700, align="center"]
+
+次に， CNN のモデルを定義する．
+
+[source, python, linenums]
+----
+model = Model()
+model.to("cuda") # load to GPU
+----
+
+今回使う `Model` は `simple_mnist.py` の中で定義されている．
+このモデルは，<<handson_02_cnn_architecture>> に示したような，２層の畳み込み層と2層の全結合層からなるネットワークである．
+出力層 (output layer) には Softmax 関数を使用し，損失関数 (Loss function) には 負の対数尤度関数 (Negative log likelyhood; NLL) を使用している．
 
 
+[[handson_02_cnn_architecture]]
+.本ハンズオンで使用するニューラルネットの構造．
+image::imgs/handson-02/cnn_architecture.png[cnn architecture, 700, align="center"]
 
+続いて， CNN のパラメータを更新する最適化アルゴリズムを定義する．
+ここでは， **Stochastic Gradient Descent (SGD)** を使用している．
 
+[source, python, linenums]
+----
+optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.5)
+----
+
+これで，準備が整った．
+CNN の学習ループを開始しよう!
+
+[source, python, linenums]
+----
+train_losses = []
+for epoch in range(5):
+    losses = train(model, trainloader, optimizer, epoch)
+    train_losses = train_losses + losses
+    test(model, testloader)
+
+plt.figure(figsize=(7,5))
+plt.plot(train_losses)
+plt.xlabel("Iterations")
+plt.ylabel("Train loss")
+----
+
+ここでは5エポック分学習を行っている．
+GPU を使えば，これくらいの計算であれば1分程度で完了するだろう．
+
+出力として， <<handson_02_train_loss>> のようなプロットが得られるはずである．
+イテレーションを重ねるにつれて，損失関数 (Loss function) の値が減少している (=精度が向上している) ことがわかる．
+
+出力には各エポック終了後のテストデータに対する精度も表示されている．
+最終的には 99% 程度の極めて高い精度を実現できていることが確認できるだろう (<<handson_02_mnist_final_score>>)．
+
+[[handson_02_train_loss]]
+.学習の進行に対する Train loss の変化
+image::imgs/handson-02/train_loss.png[train_loss, 500, align="center"]
+
+[[handson_02_mnist_final_score]]
+.学習したCNNのテストデータに対するスコア (5エポック後)
+image::imgs/handson-02/mnist_final_score.png[mnist_final_score, 700, align="center"]
+
+最後に，学習した CNN の推論結果を可視化してみよう．
+次のコードを実行することで， <<handson_02_mnist_mnist_prediction>> のような出力が得られるだろう．
+この図で，下段右下などは，"1"に近い見た目をしているが，きちんと"9"と推論できている．
+なかなか賢い CNN を作り出すことができたようだ！
+
+[source, python, linenums]
+----
+model.eval()
+
+with torch.no_grad():
+    output = model(example_data.to("cuda"))
+
+fig = plt.figure(figsize=(10,4))
+for i in range(10):
+    plt.subplot(2,5,i+1)
+    plt.tight_layout()
+    plt.imshow(example_data[i][0], cmap='gray', interpolation='none')
+    plt.title("Prediction: {}".format(output.data.max(1, keepdim=True)[1][i].item()))
+    plt.xticks([])
+    plt.yticks([])
+plt.show()
+----
+
+[[handson_02_mnist_mnist_prediction]]
+.学習した CNN による，MNIST画像の推論結果
+image::imgs/handson-02/mnist_prediction.png[mnist_prediction, 700, align="center"]
+
+おめでとう！
+これで，めでたくあなたは AWS クラウドの仮想サーバーを使って，最初のディープラーニングの計算を行うことができた！
+MNIST 文字認識のタスクを行うニューラルネットを，GPUを使って高速に学習させ，現実的な問題を一つ解くことができたのである．
+これは実践的なクラウドの活用に向けた，大きな一歩である！！
+
+=== スタックの削除
+
+クラウド料金を最小化するため，使い終わったEC2インスタンスはすぐさま削除しよう．
+
+ハンズオン第一回と同様に， AWS の CloudFormation コンソールか， AWS CLI により削除を実行する (詳細は <<handson_01_delete_stack>> 参照)．
+
+[source, bash]
+----
+$ cdk destroy
+----
+
+[IMPORTANT]
+====
+**スタックの削除は各自で必ず行うこと！** 行わなかった場合，EC2インスタンスの料金が発生し続けることになる！ `g4dn.xlarge` は $0.526 / hour の料金設定なので，一日起動しつづけると約$12の請求が発生することになる！
+====
+
+[NOTE]
+====
+AWS で， GPU 搭載型のインスタンスはかなり高めの料金設定がされている．
+したがって，プログラムの開発やデバッグはローカルマシンの GPU で行い，大規模なデータを処理するときや，複数の GPU を並列に使って高速にモデルの学習を行いたい場合などにクラウドを利用する，と使い分けるのがよいと筆者は考えている．
+====
 
