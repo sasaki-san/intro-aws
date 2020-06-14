@@ -1,7 +1,7 @@
 = AWSによるクラウド入門
 Tomoyuki Mano <tomoyukimano@gmail.com>
 v1.0, May 2020
-:toc:
+:toc: left
 :sectnums:
 :source-highlighter: rouge
 :rouge-style: github
