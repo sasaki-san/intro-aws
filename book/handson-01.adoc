@@ -1,6 +1,6 @@
 == Hands-on #1: 初めてのEC2インスタンスを起動する
 
-ハンズオンの第一回では，CDKを使ってEC2のインスタンス(仮想サーバー)を起動し，SSHでサーバーにログインする，という演習を行う．
+ハンズオンの第一回では， CDK を使って EC2 のインスタンス(仮想サーバー)を作成し，SSHでサーバーにログインする，という演習を行う．
 このハンズオンを終えれば，あなたは自分だけのサーバーをAWS上に立ち上げ，自由に計算を走らせることができるようになるのである！
 
 ハンズオンのソースコードはこちらのリンクに置いてある => https://gitlab.com/tomomano/intro-aws/handson/01-ec2
@@ -34,14 +34,24 @@ AWS CLI のインストールについては， <<aws_cli_install>> を参照．
 
 AWS CDK のインストールについては， <<aws_cdk_install>> を参照．
 
+==== ソースコードのダウンロード
+
+本ハンズオンで使用するプログラムのソースコードを，以下のコマンドを使って GitLab からダウンロードする．
+
+[source, bash]
+----
+$ git clone https://gitlab.com/tomomano/intro-aws.git
+----
+
+あるいは， https://gitlab.com/tomomano/intro-aws のページに行って，右上のダウンロードボタンからダウンロードすることもできる．
+
 ==== SSH
 
 https://en.wikipedia.org/wiki/Secure_Shell[SSH (secure shell)] はUnix系のリモートサーバーに安全にアクセスするためのツールである．
 SSHによる通信はすべて暗号化されているので，機密情報をインターネット越しに安全に送受信することができる．
 本ハンズオンで，リモートのサーバーにアクセスするためにSSHクライアントがインストールされている必要がある．
-SSHクライアントはLinux/Macのシェルには標準搭載されている．
-Windowsの場合はWSLをインストールすることを推奨する．
-詳しくは <<environments>> を参照．
+SSHクライアントはLinux/Macには標準搭載されている．
+Windowsの場合はWSLをインストールすることでSSHクライアントを利用することを推奨する (<<environments>> を参照)．
 
 SSH コマンドの基本的な使い方は
 
@@ -51,7 +61,7 @@ $ ssh <user name>@<host name>
 ----
 
 である．
-`<host name>` はアクセスする先のサーバーのIPアドレスやDNSによるホストネーム (e.g. google.com) などが入る．
+`<host name>` はアクセスする先のサーバーのIPアドレスやDNSによるホストネームが入る．
 `<user name>` は接続する先のユーザー名である．
 
 SSH は平文のパスワードによる認証を行うこともできるが，より強固なセキュリティを施すため，**公開鍵暗号方式(Public Key Cryptography)による認証**を行うことが強く推奨されており，EC2はこの方法でしかアクセスを許していない．
@@ -69,23 +79,6 @@ $ ssh -i Ec2SecretKey.pem <user name>@<host name>
 
 のように使う．
 
-[NOTE]
-====
-SSH コマンドはデフォルトの動作として， `~/.ssh/` のディレクトリにあるファイルをスキャンし， `id_rsa` や `id_ed25519` など，適合するファイル名が存在するとその秘密鍵を使ってログインを試みる．
-====
-
-==== ソースコードのダウンロード
-
-以下のコマンドで GitLab からソースコードをダウンロードする．
-
-[source, bash]
-----
-# with https
-$ git clone https://gitlab.com/tomomano/intro-aws.git
-----
-
-あるいは， https://gitlab.com/tomomano/intro-aws のページに行って，右上のダウンロードボタンからダウンロードすることもできる．
-
 === アプリケーションの説明
 
 このハンズオンで作成するアプリケーションの概要を <<handson_01_architecture>> に示す．
@@ -97,6 +90,7 @@ image::imgs/handson-01/app_architecture.png[hands-on 01 architecture, 600, align
 このアプリケーションは，ではまず，**VPC (Virtual Private Cloud)** を使ってプライベートな仮想ネットワーク環境を立ち上げている．
 そのVPCの public subnet の内側に，**EC2 (Elatic Compute Cloud)** の仮想サーバーを配置する．
 さらに，セキュリティのため， **Security Group** によるEC2インスタンスへのアクセス制限を設定している．
+このようにして作成された仮想サーバーに，SSHを使ってアクセスし，簡単な計算を行う．
 
 上記のようなアプリケーションを，CDKを使って構築する．
 
@@ -161,9 +155,23 @@ VPCはAWS上にプライベートな仮想ネットワーク環境を構築す�
 
 [TIP]
 ====
-**Advanced tips**
-
 興味のある読者のために，VPCのコードについてもう少し詳しく説明しよう．
+
+[source, python]
+----
+vpc = ec2.Vpc(
+    self, "MyFirstEc2-Vpc",
+    max_azs=1,
+    cidr="10.10.0.0/23",
+    subnet_configuration=[
+        ec2.SubnetConfiguration(
+            name="public",
+            subnet_type=ec2.SubnetType.PUBLIC,
+        )
+    ],
+    nat_gateways=0,
+)
+----
 
 * `max_azs=1` : このパラメータは，前章で説明した avaialibility zone を設定している．このハンズオンでは，特にデータセンターの障害などを気にする必要はないので1にしている．
 * `cidr="10.10.0.0/23"` : このパラメターは，VPC内のIPv4のレンジを指定している．CIDR記法については， https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing[Wikipedia]などを参照． `10.10.0.0/23` は `10.10.0.0` から `10.10.1.255` までの512個の連続したアドレス範囲を指している．つまり，このVPCでは最大で512個のユニークなIPv4アドレスが使えることになる．今回はサーバーは一つなので512個は明らかに多すぎるが，VPCはアドレスの数はどれだけ作成しても無料なので，多めに作成した．
@@ -173,13 +181,28 @@ VPCはAWS上にプライベートな仮想ネットワーク環境を構築す�
 
 ==== Security Group
 
-Security group (SG) は，EC2インスタンスに付与することのできる仮想ファイアーウォールである．例えば，特定のIPアドレスから来た接続を許したり(インバウンド・トラフィック)，逆に特定のIPアドレスへのアクセスを禁止したり(アウトバウンド・トラフィック)することができる．
+Security group (SG) は，EC2インスタンスに付与することのできる仮想ファイアーウォールである．例えば，特定のIPアドレスから来た接続を許したり　(インバウンド・トラフィックの制限) ，逆に特定のIPアドレスへのアクセスを禁止したり (アウトバウンド・トラフィックの制限) することができる．
+
+コードの該当部分を見てみよう．
+
+[source, python]
+----
+sg = ec2.SecurityGroup(
+    self, "MyFirstEc2Vpc-Sg",
+    vpc=vpc,
+    allow_all_outbound=True,
+)
+sg.add_ingress_rule(
+    peer=ec2.Peer.any_ipv4(),
+    connection=ec2.Port.tcp(22),
+)
+----
 
 本ハンズオンでは，SSHによる外部からの接続を許容するため， `sg.add_ingress_rule(peer=ec2.Peer.any_ipv4(), connection=ec2.Port.tcp(22))` により，すべてのIPv4アドレスからのポート22番へのアクセスを許容している．
 
 また，SSHでEC2インスタンスにログインしたのち，インターネットからプログラムなどをダウンロードできるよう， `allow_all_outbound=True` のパラメータを設定している．
 
-[WARNING]
+[TIP]
 ====
 セキュリティ上の観点からは，SSHの接続は自宅や大学などの特定の地点からの接続のみを許す方が望ましい．
 ====
@@ -192,6 +215,7 @@ EC2 はAWS上に仮想サーバーを立ち上げるサービスである．個�
 
 EC2では用途に応じて様々なインスタンスタイプが提供されている．以下に，代表的なインスタンスタイプの例を挙げる(2020/06時点での情報)．EC2 のインスタンスタイプのすべてのリストは https://aws.amazon.com/ec2/instance-types/[公式ドキュメンテーション]で見ることができる．
 
+[[ec2_instance_types]]
 [cols="1,1,1,1,1", options="header"] 
 .EC2 instance types
 |===
@@ -243,12 +267,39 @@ EC2では用途に応じて様々なインスタンスタイプが提供され�
 
 [TIP]
 ====
+<<ec2_instance_types>> の価格は `us-east-1` のもの．地域によって多少価格設定が異なることがある．
+====
+
+[TIP]
+====
 上記で t2.micro の $0.0116 / hour という金額は，on-demandインスタンスというタイプを選択した場合の価格である．
 EC2 では他に，Spot instance と呼ばれるインスタンスも存在しする．
 Spot instance は，AWSのデータセンターの負荷が増えた場合，AWSの判断により強制シャットダウンされる可能性がある，という不便さを抱えているのだが，その分大幅に安い料金設定になっている．
 いうなれば，"すき間の空きCPUで計算を行う"といった格好である．
 科学計算で，コストを削減する目的で，このSpot Instanceを使う事例も報告されている (https://arxiv.org/abs/1904.10489[Wu+, 2019])．
 ====
+
+コードの該当部分を見てみよう．
+
+[source, python]
+----
+host = ec2.Instance(
+    self, "MyFirstEc2Instance",
+    instance_type=ec2.InstanceType("t2.micro"),
+    machine_image=ec2.MachineImage.latest_amazon_linux(),
+    vpc=vpc,
+    vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
+    security_group=sg,
+    key_name=key_name
+)
+----
+
+ここでは， `t2.micro` というインスタンスタイプを選択している．
+さらに， `machine_image` (OSと考えてよい) として， https://aws.amazon.com/amazon-linux-ami/[Amazon Linux] を選択している (Machine image については，第二回ハンズオンでより詳しく触れる)．
+さらに，上で定義した VPC, SG をこのインスタンスに付与している．
+
+以上が，今回使用するプログラムの簡単な解説であった．
+ミニマルな形のプログラムではあるが，仮想サーバーを作成するのに必要なステップがおわかりいただけただろうか？
 
 === プログラムを実行する
 
@@ -262,7 +313,7 @@ Spot instance は，AWSのデータセンターの負荷が増えた場合，AWS
 
 [source, bash]
 ----
-$ cd intro-aws/handson/01-ec2
+$ cd handson/01-ec2
 ----
 
 ディレクトリを移動したら， `venv` で新しい仮想環境を作成し，インストールを実行する．
@@ -393,7 +444,7 @@ Swap:        0k total,        0k used,        0k free,   185856k cached
 
 `t2.micro` インスタンスなので， 1009140k = 1GB のメモリーがあることがわかる．
 
-今回起動したインスタンスには Python2 はインストール済みだが， Python 3 は入っていない．
+今回起動したインスタンスには Python 2 はインストール済みだが， Python 3 は入っていない．
 最後の課題として， Python 3.6 のインストールを行ってみよう．
 インストールは簡単である．
 

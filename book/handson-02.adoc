@@ -233,6 +233,12 @@ $ jupyter notebook
 .Jupyter notebook サーバーを起動
 image::imgs/handson-02/jupyter_launch.png[jupyter launch, 700, align="center"]
 
+[NOTE]
+====
+Jupyter notebook を初回に起動するときは，起動に少し時間がかかることがある．
+1,2分じっと待つ．
+====
+
 先ほど，ポートフォワーディングのオプションをつけてSSH接続をしているので， Jupyter の起動している `localhost:8888` には，ローカルマシンの `localhost:8931` からアクセスすることができる．
 
 したがって，ローカルマシンから Jupyter にアクセスするには，ウェブブラウザ (Chrome, FireFox など)から次のアドレスにアクセスすれば良い．
