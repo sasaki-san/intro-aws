@@ -5,7 +5,7 @@
 🚀🚀講義資料をこのページで公開しています🚀🚀
 
 - テキスト(HTML版)はこちら https://tomomano.gitlab.io/intro-aws/
-- テキスト(PDF版)はこちら [book.pdf](book.pdf)
+- テキスト(PDF版)はこちら https://tomomano.gitlab.io/intro-aws/main.pdf
 - ハンズオンで使用するプログラム => [handson/](handson/)
 
 文章の誤りやソースコードのバグを発見した場合は， [Issues](https://gitlab.com/tomomano/intro-aws/-/issues) にご投稿ください🐛🐛
