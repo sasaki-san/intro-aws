@@ -1,6 +1,5 @@
-image: ruby:2.6
-
 pages:
+  image: ruby:2.6
   stage: deploy
   script:
     - cd book
