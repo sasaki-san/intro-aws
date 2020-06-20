@@ -193,6 +193,27 @@ $ ssh -i ~/.ssh/HirakeGoma.pem -L localhost:8931:localhost:8888 ec2-user@<IP add
 SSH ログインコマンドの `<IP address>` 部分は自分のインスタンスのIPアドレスを代入することを忘れずに．
 ====
 
+[WARNING]
+====
+**本講義の提供している Docker を使ってデプロイを実行した人へ**
+
+SSH によるログインは， **Docker の外** (すなわちクライアントマシン本体) から行わなければならない．
+なぜなら，Jupyter を開くウェブブラウザは Docker の外にあるからである．
+
+その際，秘密鍵を Docker の外に持ってこなければならない．手っ取り早い方法は， `cat ~/.ssh/HirakeGoma` と打って，出力結果をコピー&ペーストで Docker の外に持ってくる方法である．
+
+あるいは `-v` オプションをつけて，ファイルシステムをマウントしてもよい (詳しくは https://docs.docker.com/storage/volumes/[参照])．
+
+次のようなコマンドで Docker を起動する．
+
+[source, bash]
+----
+docker run -it -v ./:~/.ssh registry.gitlab.com/tomomano/intro-aws:latest
+----
+
+こうすることで，クライアントマシン本体のワーキングディレクトリ (`./`) と， Docker の `~/.ssh` というディレクトリがシンクロした形になり，相互的にファイルをやり取りすることができる．
+====
+
 SSHによるログインができたら，早速，GPUの状態を確認してみよう．以下のコマンドを実行する．
 
 [source, bash]
@@ -456,16 +477,20 @@ PyTorch において， GPU での演算は asynchronous (非同期) で実行�
 
 [[handson_02_mnist_examples]]
 .MNIST 手書き数字データセット
-image::imgs/handson-02/mnist_examples.png[mnist_examples, 500, align="center"]
+image::imgs/handson-02/mnist_examples.png[mnist_examples, 400, align="center"]
 
 今回は， MNIST 文字認識タスクを，**畳み込みニューラルネットワーク (Convolutional Neural Network; CNN)** を使って解く．
 ソースコードは https://gitlab.com/tomomano/intro-aws/-/tree/master/handson/02-ec2-dnn/pytorch_get_started/[/handson/02-ec2-dnn/pytorch/] にある `mnist.ipynb` と `simple_mnist.py` である．
 なお，このプログラムは， https://github.com/pytorch/examples/tree/master/mnist[PyTorch の公式 Example Project 集] を参考に，多少の改変を行ったものである．
 
-まず最初に，カスタムのクラスや関数が定義された `simple_mnist.py` をアップロードしよう．
+まず最初に，カスタムのクラスや関数が定義された `simple_mnist.py` をアップロードしよう (<<handson_02_jupyter_upload>>)．
 画面右上の "Upload" ボタンをクリックし，ファイルを選択すればよい．
 この Python プログラムの中に，CNN のモデルや，学習の各イテレーションにおけるパラメータの更新などが記述されている．
 今回は，この中身を説明することはしないが，興味のある読者は，自分でソースコードを読んでみるとよい．
+
+[[handson_02_jupyter_upload]]
+.`simple_mnist.py` をアップロード
+image::imgs/handson-02/jupyter_upload.png[jupyter upload, 600, align="center"]
 
 `simple_mnist.py` をアップロードできたら，次に新しい notebook を作成しよう．
 "conda_pytorch_p36" の環境を選択することを忘れずに．
@@ -637,7 +662,7 @@ $ cdk destroy
 
 [NOTE]
 ====
-AWS で， GPU 搭載型のインスタンスはかなり高めの料金設定がされている．
+AWS で， GPU 搭載型のインスタンスは高めの料金設定がされている．
 したがって，プログラムの開発やデバッグはローカルマシンの GPU で行い，大規模なデータを処理するときや，複数の GPU を並列に使って高速にモデルの学習を行いたい場合などにクラウドを利用する，と使い分けるのがよいと筆者は考えている．
 ====
 
