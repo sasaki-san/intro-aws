@@ -1,15 +1,24 @@
-build:
+docker:
   image: docker:19.03.11
   stage: build
   services:
     - docker:19.03.11-dind
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - cd docker
-    - docker build -t $CI_REGISTRY/tomomano/intro-aws:latest .
+    - docker build -t $CI_REGISTRY/tomomano/intro-aws:latest docker/
     - docker push $CI_REGISTRY/tomomano/intro-aws:latest
   only:
     - master
+
+docker-handson-03:
+  image: docker:19.03.11
+  stage: build
+  services:
+    - docker:19.03.11-dind
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t $CI_REGISTRY/tomomano/intro-aws/handson03:latest handson/03-qa-bot/docker/
+    - docker push $CI_REGISTRY/tomomano/intro-aws/handson-3:latest
 
 pages:
   image: ruby:2.6
