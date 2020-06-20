@@ -34,10 +34,6 @@ image::imgs/aws_educate.png[AWS Educate, 600, align="center"]
 .AWS Educate スクリーンショット2
 image::imgs/aws_educate_account.png[AWS Educate, 600, align="center"]
 
-
-[[python_nodejs_install]]
-=== Python, node.js のインストール
-
 [[aws_cli_install]]
 === AWS CLI のインストール
 

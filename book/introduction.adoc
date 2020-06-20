@@ -20,7 +20,7 @@ Amazon Web Service (AWS)の提供するクラウド環境を実例として，�
 a|
 * AWS と Jupyter を使ってMNIST文字認識タスクを解く
 * AWS で，Q&Aボット "Ahoxa" を作る
-| 第三回 (7/8) | Serverless Architecture 入門 | AWSでデータベースを作る (俳句を投稿するSNS・Bashoutter を作る)
+| 第三回 (7/8) | Serverless Architecture 入門 | AWSでデータベースを作る (俳句を投稿するSNS "Bashoutter" を作る)
 |===
 
 講義初回は，クラウドの基礎となる概念・知識を解説する．
@@ -64,30 +64,6 @@ https://www.docker.com/[Docker]
 .宇宙からみた地球 (Image from NASA https://www.nasa.gov/image-feature/planet-of-clouds)
 image::imgs/earth_from_earth.jpg[cdk output, 500, align="center"]
 
-[[environments]]
-=== 必要な計算機環境
-
-講義では，AWS上にクラウドを展開するハンズオンを実施する．そこで紹介するプログラムを実行するため，以下の計算機環境が必要である．
-
-- **UNIX系コンソール**: ハンズオンで紹介するコマンドを実行したり，SSHでサーバーにアクセスするため，UNIX系のコンソール環境が必要である．Mac または Linux のユーザーは，OSに標準搭載のコンソール(ターミナルとも呼ばれる)を使用すればよい．Windowsのユーザーは，
-https://docs.microsoft.com/en-us/windows/wsl/install-win10[Windows Subsystem for Linux (WSL)]
-を使ってUbuntuの仮想環境をインストールすることを推奨する．
-WSLのインストールについては，
-https://docs.microsoft.com/en-us/windows/wsl/install-win10[公式ドキュメンテーションを参照]
-のこと．
-- **Dockerのインストール**: 講義ではDockerの使い方を解説する．予め自身の計算機にDockerのインストールをしておくこと．Linux/Mac/Windowsのインストール法については https://docs.docker.com/get-docker/[公式ドキュメンテーション]を参照．執筆時点において，**Windows 10 Home**へのインストールには注意が必要である．詳細は
-https://docs.docker.com/docker-for-windows/install-windows-home/[こちらのドキュメンテーションを参照]
-のこと．
-- **Python** (Version 3.6以上を推奨)
-- **node.js** (version 10.0以上を推奨)
-
-=== 前提知識
-
-本講義を行うにあたり，前提知識は特に仮定しない．が，以下の前提知識があるとよりスムーズに理解をすることができるだろう．
-
-- **Pythonの基本的な理解**: 本講義ではPythonを使ってプログラムの作成を行う．使用するライブラリは十分抽象化されており，関数の名前を見ただけで意味が明瞭なものがほとんどであるので，Pythonに詳しくなくても心配はない．
-- **Linuxコマンドラインの基礎的な理解**: クラウドを利用する際，クラウド上に立ち上がるサーバーは基本的にLinuxである(Windowsを選択することもできなくはないが一般的ではない)．Linuxのコマンドラインについて知識があると，トラブルシュートなどが容易になる．
-
 [[aws_account]]
 === AWSアカウント
 
@@ -99,6 +75,52 @@ AWS Educate の登録手順については <<appendix_aws_account>> に記載し
 
 AWSは，商用のサービスなので，計算の実行には，多少のコストがかかる．
 講義のハンズオンでは，なるべくコストがかからないような設計にし，上記の AWS Educate のクーポンの範囲内で収まるように努める．
+
+[[environments]]
+=== 必要な計算機環境
+
+講義では，AWS上にクラウドを展開するハンズオンを実施する．そこで紹介するプログラムを実行するため，以下の計算機環境が必要である．
+
+* **UNIX系コンソール**: ハンズオンで紹介するコマンドを実行したり，SSHでサーバーにアクセスするため，UNIX系のコンソール環境が必要である．
+Mac または Linux のユーザーは，OSに標準搭載のコンソール(ターミナルとも呼ばれる)を使用すればよい．
+Windowsのユーザーは，
+https://docs.microsoft.com/en-us/windows/wsl/install-win10[Windows Subsystem for Linux (WSL)]
+を使ってUbuntuの仮想環境をインストールすることを推奨する．
+WSLのインストールについては，
+https://docs.microsoft.com/en-us/windows/wsl/install-win10[公式ドキュメンテーションを参照]
+のこと．
+* **Docker**: 講義ではDockerの使い方を解説する．
+予め自身の計算機にDockerのインストールをしておくこと．Linux/Mac/Windowsのインストール法については https://docs.docker.com/get-docker/[公式ドキュメンテーション]を参照．
+執筆時点において，**Windows 10 Home**　へのインストールには注意が必要である．詳細は
+https://docs.docker.com/docker-for-windows/install-windows-home/[こちらのドキュメンテーションを参照]
+のこと．
+* **Python** (Version 3.6以上)
+* **node.js** (version 10.0以上)
+* **AWS CLI** (インストールについては <<aws_cli_install>> 参照)
+* **AWS CDK** (インストールについては <<aws_cdk_install>> 参照)
+
+==== ハンズオン実行用の Docker Image
+
+Python, node.js, AWS CDK など，ハンズオンのプログラムを実行するために必要なプログラム/ライブラリがインストール済みの Docker image を用意した．
+また，ハンズオンのソースコードもクローン済みである．
+Docker の使い方を知っている読者は，これを使えば，諸々のインストールをする必要なく，すぐにハンズオンのプログラムを実行できる．
+
+次のコマンドで起動する．
+
+[source, bash]
+----
+docker run -it registry.gitlab.com/tomomano/intro-aws:latest
+----
+
+Docker Image は https://gitlab.com/tomomano/intro-aws/container_registry[GitLab の Container registry] においてある．
+Docker Image のソースコードは https://gitlab.com/tomomano/intro-aws/-/tree/master/docker[こちら] にある．
+
+=== 前提知識
+
+本講義を行うにあたり，前提知識は特に仮定しない．が，以下の前提知識があるとよりスムーズに理解をすることができるだろう．
+
+- **Pythonの基本的な理解**: 本講義ではPythonを使ってプログラムの作成を行う．使用するライブラリは十分抽象化されており，関数の名前を見ただけで意味が明瞭なものがほとんどであるので，Pythonに詳しくなくても心配はない．
+- **Linuxコマンドラインの基礎的な理解**: クラウドを利用する際，クラウド上に立ち上がるサーバーは基本的にLinuxである(Windowsを選択することもできなくはないが一般的ではない)．Linuxのコマンドラインについて知識があると，トラブルシュートなどが容易になる．
 
 === 講義に関連する資料
 

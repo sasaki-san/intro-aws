@@ -1,6 +1,6 @@
 = AWSによるクラウド入門
 Tomoyuki Mano <tomoyukimano@gmail.com>
-v1.0, May 2020
+v1.0, 2020-06-19
 :toc: left
 :sectnums:
 :source-highlighter: rouge
@@ -17,6 +17,7 @@ include::handson-02.adoc[]
 include::big_data.adoc[]
 include::assignments.adoc[]
 include::appendix.adoc[]
+include::acknowledgement.adoc[]
 include::author.adoc[]
 include::license.adoc[]
 

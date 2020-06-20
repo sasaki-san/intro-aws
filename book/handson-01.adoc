@@ -24,7 +24,6 @@ AWSアカウントの取得については <<aws_account>> および <<appendix_
 * node.js (10.3.0 以上)
 
 がインストールされていなければならない．
-インストールの方法については <<python_nodejs_install>> に簡単なガイドを記してある．
 
 ==== AWS CLI
 
@@ -45,9 +44,25 @@ $ git clone https://gitlab.com/tomomano/intro-aws.git
 
 あるいは， https://gitlab.com/tomomano/intro-aws のページに行って，右上のダウンロードボタンからダウンロードすることもできる．
 
-==== SSH
+==== Docker を使用する場合
+
+Python, node.js, AWS CDK など，ハンズオンのプログラムを実行するために必要なプログラム/ライブラリがインストール済みの Docker image を用意した．
+また，ハンズオンのソースコードもクローン済みである．
+Docker の使い方を知っている読者は，これを使えば，諸々のインストールをする必要なく，すぐにハンズオンのプログラムを実行できる．
+
+次のコマンドで起動する．
+
+[source, bash]
+----
+docker run -it registry.gitlab.com/tomomano/intro-aws:latest
+----
+
+=== SSH
 
 https://en.wikipedia.org/wiki/Secure_Shell[SSH (secure shell)] はUnix系のリモートサーバーに安全にアクセスするためのツールである．
+本ハンズオンでは， SSH を使って仮想サーバーにアクセスする．
+SSH に慣れていない読者のため，簡単な説明をここで行う．
+
 SSHによる通信はすべて暗号化されているので，機密情報をインターネット越しに安全に送受信することができる．
 本ハンズオンで，リモートのサーバーにアクセスするためにSSHクライアントがインストールされている必要がある．
 SSHクライアントはLinux/Macには標準搭載されている．
