@@ -13,9 +13,7 @@ RUN apt update \
     && rm -rf /var/lib/apt/lists
 
 RUN python3 -m pip install --no-cache-dir --upgrade pip \
-    && python3 -m pip install --no-cache-dir \
-        jupyter \
-        torch
+    && python3 -m pip install --no-cache-dir torch
 
 WORKDIR /workspace
 RUN git clone https://github.com/huggingface/transformers \
@@ -29,5 +27,4 @@ RUN echo "from transformers import pipeline; nlp = pipeline('question-answering'
 
 COPY main.py /workspace
 ENTRYPOINT ["python3", "main.py"]
-
 #CMD ["/bin/bash"]
