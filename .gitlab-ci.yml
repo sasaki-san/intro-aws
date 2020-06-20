@@ -8,6 +8,8 @@ build:
     - cd docker
     - docker build -t $CI_REGISTRY/tomomano/intro-aws:latest .
     - docker push $CI_REGISTRY/tomomano/intro-aws:latest
+  only:
+    - master
 
 pages:
   image: ruby:2.6

@@ -1,4 +1,5 @@
 FROM node:12
+LABEL maintainer="Tomoyuki Mano"
 
 RUN cd /opt \
     && curl -q "https://www.python.org/ftp/python/3.7.6/Python-3.7.6.tgz" -o Python-3.7.6.tgz \
@@ -14,10 +15,13 @@ RUN cd /opt \
 
 RUN npm install -g aws-cdk@1.30
 
+RUN cd /root \
+    && git clone https://gitlab.com/tomomano/intro-aws.git
+
 # Make command line prettier...
 RUN echo "alias ls='ls --color=auto'" >> /root/.bashrc
 RUN echo "PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@aws-handson\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '" >> /root/.bashrc
 
 RUN mkdir -p /root/.ssh
 WORKDIR /root
-ENTRYPOINT ["/bin/bash"]
+CMD ["/bin/bash"]
