@@ -1,5 +1,6 @@
 import argparse, sys, logging
 from transformers import pipeline
+from decimal import Decimal
 import boto3
 
 # supress warning message from pipeline
@@ -28,7 +29,7 @@ def main():
             "item_id": args.item_id,
             "context": args.context,
             "question": args.question,
-            "score": float(answer["score"]),
+            "score": Decimal(answer["score"]),
             "start": int(answer["start"]),
             "end": int(answer["end"]),
             "answer": answer["answer"],
