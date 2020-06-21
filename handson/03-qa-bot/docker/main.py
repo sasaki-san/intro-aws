@@ -5,16 +5,10 @@ import boto3
 # supress warning message from pipeline
 logging.disable(sys.maxsize)
 
-def main():
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument("context", type=str)
-    parser.add_argument("question", type=str)
-    parser.add_argument("item_id", type=str)
-    args = parser.parse_args()
+def main(question, context, item_id):
 
     nlp = pipeline("question-answering")
-    answer = nlp(question=args.question, context=args.context)
+    answer = nlp(question=question, context=context)
 
     # get the table name
     ssm_client = boto3.client("ssm")
@@ -25,12 +19,10 @@ def main():
     table = dynamodb.Table(table_name)
     resp = table.put_item(
         Item={
-            "item_id": args.item_id,
-            "context": args.context,
-            "question": args.question,
+            "item_id": item_id,
+            "context": context,
+            "question": question,
             "score": str(answer["score"]),
-            "start": int(answer["start"]),
-            "end": int(answer["end"]),
             "answer": answer["answer"],
         }
     )
@@ -39,4 +31,9 @@ def main():
     print(resp)
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("context", type=str)
+    parser.add_argument("question", type=str)
+    parser.add_argument("item_id", type=str)
+    args = parser.parse_args()
+    main(args.context, args.question, args.item_id)
