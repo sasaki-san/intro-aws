@@ -18,8 +18,8 @@ Amazon Web Service (AWS)の提供するクラウド環境を実例として，�
 | 第一回 (6/24) | クラウドの基礎 | AWSに自分のサーバーを立ち上げる
 | 第二回 (7/1) | クラウドで行う機械学習
 a|
-* AWS と Jupyter を使ってMNIST文字認識タスクを解く
-* AWS で，Q&Aボット "Ahoxa" を作る
+* AWS と Jupyter を使って始めるディープラーニング
+* AWS で自動質問回答ボットを作る
 | 第三回 (7/8) | Serverless Architecture 入門 | AWSでデータベースを作る (俳句を投稿するSNS "Bashoutter" を作る)
 |===
 
