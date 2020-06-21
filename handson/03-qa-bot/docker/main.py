@@ -5,7 +5,7 @@ import boto3
 # supress warning message from pipeline
 logging.disable(sys.maxsize)
 
-def main(question, context, item_id):
+def main(context, question, item_id):
 
     nlp = pipeline("question-answering")
     answer = nlp(question=question, context=context)
