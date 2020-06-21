@@ -7,7 +7,11 @@ docker build -t transformer .
 ### Running docker
 
 ```bash
-docker run transformer "Pipeline have been included in the huggingface/transformers repository" "What is the name of the repository ?"
+$ docker run transformer \
+"Pipeline have been included in the huggingface/transformers repository" \
+"What is the name of the repository ?" \
+"randomstringxxxx" \
+--no_save
 ```
 
 Expected output
