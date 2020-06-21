@@ -13,7 +13,9 @@ RUN apt update \
     && rm -rf /var/lib/apt/lists
 
 RUN python3 -m pip install --no-cache-dir --upgrade pip \
-    && python3 -m pip install --no-cache-dir torch
+    && python3 -m pip install --no-cache-dir \
+        torch \
+        boto3
 
 WORKDIR /workspace
 RUN git clone https://github.com/huggingface/transformers \
