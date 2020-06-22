@@ -48,7 +48,7 @@ answer: 1921
 .Transformer モデルアーキテクチャ (画像出典: https://arxiv.org/abs/1706.03762[Vaswani+ 2017])
 image::imgs/transformer.png[transformer, 400, align="center"]
 
-次のコマンドで，この Docker image を ローカルにダウンロード (pull) してこよう．
+次のコマンドで，今回使う Docker image を ローカルにダウンロード (pull) してこよう．
 
 [source, bash]
 ----
@@ -74,7 +74,7 @@ $ docker run registry.gitlab.com/tomomano/intro-aws/handson03:latest "${context}
 ----
 
 "score" は正解の自信度を表す数字で， [0,1] の範囲で与えられる．
-"start", "end" は， context 中の何文字目が正解に相当するかを示しており， "answer" が予測された正解の文字列である．
+"start", "end" は， context 中の何文字目が正解に相当するかを示しており， "answer" が正解と予測された文字列である．
 
 1921 年という，正しい答えが返ってきていることに注目してほしい．
 
@@ -246,7 +246,20 @@ taskdef = ecs.FargateTaskDefinition(
     cpu=1024, # 1 CPU
     memory_limit_mib=4096, # 4GB RAM
 )
+
+container = taskdef.add_container(
+    "EcsClusterQaBot-Container",
+    image=ecs.ContainerImage.from_registry(
+        "registry.gitlab.com/tomomano/intro-aws/handson03:latest"
+    ),
+)
 ----
+
+`cluster =` の箇所で，空の ECS クラスターを定義している．
+さらに， `taskdef=` の箇所で， Fargate インスタンスを使うよう指定しており，特にここでは 1 CPU, 4GB RAM というマシンスペックを設定している．
+最後に， `container = ` の箇所で，タスクの実行でで使用する Docker image を定義している．
+
+このようにわずか数行のコードであるが，これだけで上で説明したような，タスクのスケジューリングなどが自動で実行される．
 
 === スタックのデプロイ
 

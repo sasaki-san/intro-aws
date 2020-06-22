@@ -77,7 +77,7 @@ Docker で走る仮想 OS は，**多くの部分をホストのOSに依存し�
 .Docker と VM の比較 (画像出典: https://www.docker.com/blog/containers-replacing-virtual-machines/)
 image::imgs/docker_vs_vm.png[docker_vs_vm, 700, align="center"]
 
-=== Docker の使い方
+=== Docker チュートリアル
 
 Docker とはなにかを理解するためには，実際に触って動かしてみるのが一番有効な手立てである．
 ここでは， Docker の簡単なチュートリアルを行う．
