@@ -4,7 +4,7 @@
 
 具体的には， Transformer と呼ばれるディープラーニングのモデルを使った自然言語処理を利用することで，
 英語で与えられた質問への回答を自動で生成するボットを作成してみる．
-特に，何百もの質問に同時に対応できるように，単一のサーバーに展開するのではなく，リクエストに応じて複数のサーバーを自動的に起動し，ジョブを実行させるシステムを設計する．
+特に，何百何千もの質問に同時に対応できるように，単一のサーバーに展開するのではなく，リクエストに応じて複数のサーバーを自動的に起動し，並列でジョブを実行させるシステムを設計する．
 まさに，初歩的ながら， Siri/Alexa/Google assistant のようなシステムを作り上げるのである！
 
 ハンズオンのソースコードはこちらのリンクに置いてある => https://gitlab.com/tomomano/intro-aws/handson/03-qa-bot
@@ -24,7 +24,7 @@ context: Albert Einstein (14 March 1879 – 18 April 1955) was a German-born the
 question: In what year did Einstein win the Nobel prize?
 ----
 
-今回作成するシステムは，このような問題に対して， context に含まれる文字列から正解となる言葉を見つけ出すものとする．
+今回作成する自動回答システムは，このような問題に対して， context に含まれる文字列から正解となる言葉を見つけ出すものとする．
 上の問題では，次のような回答を返すべきである．
 
 ----
@@ -39,6 +39,10 @@ answer: 1921
 と呼ばれるモデルを使った自然言語処理に支えられえている (<<transformer_architecture>>)．
 このプログラムを， Docker にパッケージしたものが https://gitlab.com/tomomano/intro-aws/container_registry/ に `handson03` という名前で用意してある．
 クラウドの設計に入る前に，まずはこのプログラムを単体で動かしてみよう．
+
+なお，今回は学習済みのモデルを用いているので，私達が行うのは，与えられた入力をモデルに投げて予測を行う (推論) のみである．
+推論の演算は， CPU だけでも十分高速に行うことができるので，コストの削減と，よりシンプルにシステムを設計をする目的で，このハンズオンでは GPU は利用しない．
+一般的に， ニューラルネットは学習のほうが圧倒的に計算コストが大きく，そのような場合に GPU はより威力を発揮する．
 
 [[transformer_architecture]]
 .Transformer モデルアーキテクチャ (画像出典: https://arxiv.org/abs/1706.03762[Vaswani+ 2017])
@@ -119,3 +123,311 @@ https://github.com/huggingface/transformers[huggingface/transformers] には，�
 [[handson_03_architecture]]
 .ハンズオン#2で作製するアプリケーションのアーキテクチャ
 image::imgs/handson-03/handson-03-architecture.png[hands-on 03 architecture, 600, align="center"]
+
+簡単にまとめると，以下のような設計である．
+
+* クライアントは，質問を AWS 上のアプリケーションに送信する．
+* ジョブのスケジューリングや実行などは， ECS (Elastic Container Service) によって行われる．
+* ECS は， GitLab container registry から， Docker image をダウンロードする．
+* 次に，ECS は新たな仮想インスタンスを立ち上げ，ダウンロードされた Docker image をインスタンスに配置する．
+** このとき，ひとつの質問に対し一つの仮想インスタンスを立ち上げることで，複数の質問を並列的に処理できるようにする．
+* ジョブが実行される．
+* ジョブの実行結果 (質問への回答) は， データベース (DynamoDB) に書き込まれる．
+* 最後に，クライアントは DynamoDB から質問への回答を読み取る．
+
+それでは，プログラムのソースコードを見てみよう (https://gitlab.com/tomomano/intro-aws/-/tree/master/handson/03-qa-bot/app.py[/handson/03-qa-bot/app.py])．
+
+[source, python, linenums]
+----
+class EcsClusterQaBot(core.Stack):
+
+    def __init__(self, scope: core.App, name: str, **kwargs) -> None:
+        super().__init__(scope, name, **kwargs)
+
+        # <1>
+        # dynamoDB table to store questions and answers
+        table = dynamodb.Table(
+            self, "EcsClusterQaBot-Table",
+            partition_key=dynamodb.Attribute(
+                name="item_id", type=dynamodb.AttributeType.STRING
+            ),
+            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
+            removal_policy=core.RemovalPolicy.DESTROY
+        )
+
+        # <2>
+        vpc = ec2.Vpc(
+            self, "EcsClusterQaBot-Vpc",
+            max_azs=1,
+        )
+
+        # <3>
+        cluster = ecs.Cluster(
+            self, "EcsClusterQaBot-Cluster",
+            vpc=vpc,
+        )
+
+        # <4>
+        taskdef = ecs.FargateTaskDefinition(
+            self, "EcsClusterQaBot-TaskDef",
+            cpu=1024, # 1 CPU
+            memory_limit_mib=4096, # 4GB RAM
+        )
+
+        # grant permissions
+        table.grant_read_write_data(taskdef.task_role)
+        taskdef.add_to_task_role_policy(
+            iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                resources=["*"],
+                actions=["ssm:GetParameter"]
+            )
+        )
+
+        # <5>
+        container = taskdef.add_container(
+            "EcsClusterQaBot-Container",
+            image=ecs.ContainerImage.from_registry(
+                "registry.gitlab.com/tomomano/intro-aws/handson03:latest"
+            ),
+        )
+----
+<1> ここでは，回答の結果を書き込むためのデータベースを用意している． DynamoDB については， Serverless architecture の章で扱うので，今は気にしなくてよい．
+<2> ここでは，ハンズオン #1, #2 で行ったのと同様に， VPC を定義している．
+<3> ここで， ECS のクラスター (cluster) を定義している．
+クラスターとは，仮想サーバーのプールのことであり，クラスターの中に複数の仮想インスタンスを配置する．
+ECS についてはこの後で詳しく解説する．
+<4> ここで，実行するタスクを定義している (task definition)．
+ここでは Fargate という， EC2 と似ているが， ECS での利用に特化した計算サービスを使っている．
+Fargate についてはこの後で詳しく解説する．
+<5> ここで， タスクの実行で使用する Docker image を定義している．
+GitLab container registry に置いてある image をダウンロードしてくるよう指定している．
+
+それぞれについて，もう少し詳しく見てみよう．
+
+==== ECS
+
+Elastic Container Service (ECS) とは， Docker を使った計算機クラスターを作成するためのツールである．
+
+ECS は，いくつかの機能を担っている．
+まず，送信されたジョブを受け付けた上で，タスクのスケジューリングを行う．
+スケジューリングとは，クラスター内の仮想インスタンスの空きを探し，空きがある場合はその仮想インスタンスにタスクを投入し，空きがない場合は新しい仮想インスタンスを立ち上げる，というような操作のことを言う．
+今回設計するシステムでは， 1タスクにつき1インスタンスを使用する，という設計にしているので， ECS は新しいタスクが来るたびに，新しいインスタンスをクラスター内に起動する．
+また，使い終わったインスタンスをシャットダウンする操作も， ECS によって行われる．
+
+ECS のもう一つの大事な役目として， 指定された場所から Docker image をダウンロードし，クラスター内の計算機に配置する，という点があげられる．
+このハンズオンで設計するシステムは， GitLab の container registry から image をダウンロードしている．
+他にも，AWS 上のコンテナ置き場である Elastic Container Registry (ECR)や， Docker Hub などのレジストリーを指定することも可能である．
+
+==== Fargate
+
+Fargate は， EC2 と同様に，仮想サーバー上で計算を走らせるためのサービスであるが，特に **ECS での利用に特化**されたものである．
+EC2 に比べると，計算上のいろいろな制約があるのだが， ECS に特化している分，利用者の側で設定しなければならないパラメータが圧倒的に少なく，便利である．
+
+Fargate では， EC2 と同様に CPUの数・RAM のサイズを必要な分だけ指定できる．
+執筆時点 (2020/06) では， CPU は 0.25 - 4 コア， RAM は 0.5 - 30 GB の間で選択することができる．
+
+Fargate による仮想インスタンスは， ECS によって動的に管理することができる．
+すなわち， ECS はタスクに応じて動的にインスタンスを立ち上げ，タスクの完了を検知して動的にインスタンスをシャットダウンすることができる．
+EC2 を使っても，同様のことは実現できるのだが，利用者の側で設定しなければならないことが多く，少しハードルが高い．
+そのような理由で，このハンズオンでは設定がシンプルな Fargate を採用した．
+
+ECS と Fargate についてわかったところで，コードの該当箇所を見てみよう．
+
+[source, python, linenums]
+----
+cluster = ecs.Cluster(
+    self, "EcsClusterQaBot-Cluster",
+    vpc=vpc,
+)
+
+taskdef = ecs.FargateTaskDefinition(
+    self, "EcsClusterQaBot-TaskDef",
+    cpu=1024, # 1 CPU
+    memory_limit_mib=4096, # 4GB RAM
+)
+----
+
+=== スタックのデプロイ
+
+スタックの中身が理解できたところで，早速スタックをデプロイしてみよう．
+
+デプロイの手順は，これまでのハンズオンとほとんど共通である．
+SSH によるログインの必要がないので，むしろ単純なくらいである．
+ここでは，コマンドのみ列挙する (`#` で始まる行はコメントである)．
+それぞれの意味を忘れてしまった場合は，ハンズオン1, 2に戻って復習していただきたい．
+
+[source, bash]
+----
+# プロジェクトのディレクトリに移動
+$ cd intro-aws/handson/03-qa-bot
+
+# venv を作成し，依存ライブラリのインストールを行う
+$ python3 -m venv .env
+$ source .env/bin/activate
+$ pip install -r requirements.txt
+
+# AWS の認証情報をセットする
+# 自分自身の認証情報に置き換えること！
+export AWS_ACCESS_KEY_ID=XXXXXX
+export AWS_SECRET_ACCESS_KEY=YYYYYY
+export AWS_DEFAULT_REGION=ap-northeast-1
+
+# デプロイを実行
+$ cdk deploy
+----
+
+デプロイのコマンドが無事に実行されれば， <<handson_03_cdk_output>> のような出力が得られるはずである．
+
+[[handson_03_cdk_output]]
+.CDKデプロイ実行後の出力
+image::imgs/handson-03/cdk_output.png[cdk output, 700, align="center"]
+
+AWS コンソールにログインして，デプロイされたスタックを確認してみよう．
+
+コンソールにログインしたら，ECS のページに行ってみよう．
+<<handson_03_ecs_console>> のような画面が表示されるはずである．
+
+[[handson_03_ecs_console]]
+.ECS コンソール画面
+image::imgs/handson-03/ecs_console.png[ecs_console, 700, align="center"]
+
+Cluster というのが，先ほど説明したとおり，複数の仮想インスタンスを束ねる一つの単位である．
+この時点ではひとつもタスクが走っていないので，タスクの数字はすべて0になっている．
+この画面にはまたすぐ戻ってくるので，開いたままにしておこう．
+
+=== タスクの実行
+
+それでは，早速，質問を実行してみよう．
+
+ECS にタスクを投入するのはやや複雑なので，タスクの投入を簡単にするプログラム (`run_task.py`) を用意した (https://gitlab.com/tomomano/intro-aws/-/tree/master/handson/03-qa-bot/run_task.py[/handson/03-qa-bot/run_task.py])．
+
+次のようなコマンドで，ECSクラスターに新しい質問を投入することができる．
+
+[source, bash]
+----
+$ python run_task.py ask "A giant peach was flowing in the river. She picked it up and brought it home. Later, a healthy baby was born from the peach. She named the baby Momotaro." "What is the name of the baby?"
+----
+
+[WARNING]
+====
+`run_task.py` を実行するには， 環境変数によって AWS の認証情報が設定されていることが前提である．
+====
+
+"ask" の引数に続き，文脈 (context) と質問を引数として渡している．
+
+上のコマンドを実行すると， "Waiting for the task to finish..." と出力が表示され，回答を得るまでしばらく待たされることになる．
+この間， AWS では， ECS がタスクを受理し，新しい Fargate のインスタンスを起動し， Docker image をそのインスタンスに配置する，という一連の処理がなされている．
+AWS コンソールから，この一連の様子をモニタリングしてみよう．
+
+先ほどの ECS コンソール画面にもどり，クラスターの名前をクリックすることで，クラスターの詳細画面を開く．
+次に， "Tasks" という名前のタブがあるので，それを開く (<<ecs_task_monitoring>>)．
+すると，実行中のタスクの一覧が表示されるだろう．
+
+[[ecs_task_monitoring]]
+.ECS のタスクの実行状況をモニタリング
+image::imgs/handson-03/ecs_task_monitoring.png[ecs_task_monitoring, 700, align="center"]
+
+<<ecs_task_monitoring>> で見て取れるように， "Desired status = RUNNING", "Last status = PENDING" となっていることから，この時点では，タスクを実行するための準備している段階である，ということがわかる．
+Fargate のインスタンスを起動し， Docker image を配置するまでおよそ1-2分の時間がかかる．
+
+しばらく待つうちに， Status が "RUNNING" に遷移し，計算が始まる．
+計算が終わると， Status は "STOPPED" に遷移し， ECS によって Fargate インスタンスは自動的にシャットダウンされる．
+
+<<ecs_task_monitoring>> の画面から， "Task" の列にあるタスクIDクリックすることで，タスクの詳細画面を開いてみよう (<<ecs_task_detail>>)．
+"Launch type = FARGATE", "Last status = STOPPED" など，タスクの情報が表示されている．
+また， "Logs" のタブを開くことで， container の吐き出した実行ログを閲覧することができる．
+
+[[ecs_task_detail]]
+.質問タスクの実行結果
+image::imgs/handson-03/ecs_task_detail.png[ecs_task_detail, 700, align="center"]
+
+さて， `run_task.py` を実行したコマンドラインに戻ってきてみると， <<ask_question_output>> のような出力が得られているはずである．
+"Momotaro" という正しい回答が返ってきている！
+
+[[ask_question_output]]
+.質問タスクの実行結果
+image::imgs/handson-03/ask_question_output.png[ask_question_output, 700, align="center"]
+
+=== タスクの同時実行
+
+さて，先ほどはたった一つの質問を投入したわけだが，今回設計したアプリケーションは， ECS と Fargate を使うことで同時にたくさんの質問を処理することができる．
+実際に，たくさんの質問を一度に投入してみよう．
+
+`run_task.py` に `ask_many` というオプションを付けることで，複数の質問を一度に送信できる．
+質問の内容は https://gitlab.com/tomomano/intro-aws/-/tree/master/handson/03-qa-bot/problems.json[/handson/03-qa-bot/problems.json] に定義されている．
+
+次のようなコマンドを実行しよう．
+
+[source, bash]
+----
+$ python run_task.py ask_many
+----
+
+このコマンドを実行した後で，先ほどの ECS コンソールに行き，タスクの一覧を見てみよう (<<ecs_many_tasks>>)．
+複数の Fargate インスタンスが起動され，タスクが並列に実行されているのがわかる．
+
+[[ecs_many_tasks]]
+.複数の質問タスクを同時に投入する
+image::imgs/handson-03/ecs_many_tasks.png[ecs_many_tasks, 700, align="center"]
+
+すべてのタスクのステータスが "STOPPED" になったことを確認した上で，質問への回答を取得しよう．
+それには，次のコマンドを実行すれば良い．
+
+[source, bash]
+----
+$ python run_task.py list_answers
+----
+
+結果として， <<ask_many_output>> のような出力が得られるだろう．
+それなりに複雑な文章問題に対し，高い正答率で回答できていることがわかるだろう．
+
+[[ask_many_output]]
+.`$ python run_task.py list_answers` の実行結果
+image::imgs/handson-03/ask_many_output.png[ask_many_output, 700, align="center"]
+
+おめでとう！
+ここまでついてこれた読者は，とても初歩的ながらも，ディープラーニングによる言語モデルを使って自動で質問への回答を生成するシステムを創り上げることができた！
+それも，数百の質問にも同時に対応できるような，とても高いスケーラビリティーを持ったシステムである！
+
+[NOTE]
+====
+`run_task.py` で質問を投入し続けると，回答を記録しているデータベースにどんどんエントリーが溜まっていく．
+これらのエントリーをすべて消去するには，次のコマンドを使う．
+
+[source, bash]
+----
+$ python run_task.py clear
+----
+
+====
+
+=== スタックの削除
+
+これにて，第三回ハンズオンは終了である．最後にスタックを削除しよう．
+
+スタックを削除するには，次のコマンドを実行すればよい．
+
+[source, bash]
+----
+$ cdk destroy
+----
+
+=== 講義第二回目のまとめ
+
+ここまでが，第二回目の講義の内容である．第一回に引き続き盛りだくさんの内容であったが，ついてこれたであろうか？
+
+第二回では，ディープラーニングの計算をクラウドで実行するため， GPU 搭載型の EC2 インスタンスの起動について解説した．
+その際， CUDA や PyTorch などのディープラーニング使うソフトウェアのインストールの手間を省くため， DLAMI を利用した．
+さらに，ハンズオン第二回では，クラウドで起動した仮想サーバーを使って， MNIST 文字認識タスクを解くニューラルネットを学習させた．
+
+また，より大規模な機械学習アプリケーションを作るための手段として， Docker と ECS による動的に計算リソースが管理されるクラスターの作り方の初歩を説明した．
+その応用として，英語で与えられた文章問題への回答を自動で生成するボットをクラウドに展開した．
+
+もちろん，この講義で紹介したプログラムはごく初歩的なものなので，現実的な問題を解くためにはプログラムのいろいろな側面を精緻化していく必要がある．
+しかしながら，このような技術を応用することでどのようにして現実世界の問題を解くのか，なんとなくイメージが伝わっただろうか？
+
+第三回では，さらにレベルアップし， Serverless architecture という最新のクラウドの設計方法について解説する．
+その応用として，簡単な SNS サービスをゼロから実装する予定である．
+お楽しみに！
+
