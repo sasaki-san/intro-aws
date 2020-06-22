@@ -1,6 +1,6 @@
 == Docker を用いた大規模機械学習システムの構築
 
-ここまで， AWS 上に仮想サーバーを立ち上げ，ディープラーニングの計算を走らせる方法を紹介してきた．
+<<sec_scientific_computing>>，<<sec_handson02>> で， AWS 上に仮想サーバーを立ち上げ，ディープラーニングの計算を走らせる方法を紹介してきた．
 ここまでは，**単一のサーバー**を立ち上げ，それにマニュアルでログインをして，コマンドを叩くことで計算を行ってきた．
 いわば，__パーソナルコンピュータの延長__のような形でクラウドを使ってきたわけである．
 
@@ -15,7 +15,8 @@
 === 機械学習の大規模化
 
 <<sec_scientific_computing>> で紹介した https://github.com/openai/gpt-3[GPT-3] のような，超巨大なディープラーニングのモデルを学習させたいとしよう．
-そのような計算をクラウドで実行する場合は，典型的には <<big_dnn_training>> のようなアーキテクチャが用いられる．
+そのような計算を行いたい場合，一つのサーバーでは計算力が到底足りない．
+したがって，典型的には <<big_dnn_training>> に示すような計算システムの設計がなされる．
 すなわち，大量の教師データを，小さなチャンクとして複数のマシンに分散し，並列的にニューラルネットのパラメータを最適化していくという構造である．
 
 [[big_dnn_training]]
@@ -23,7 +24,7 @@
 image::imgs/big_dnn_training.png[big_dnn_training, 700, align="center"]
 
 あるいは，学習済みのモデルを大量にあるデータに適用し，解析を行いたいとしよう．
-例えば，大量の動物の画像が与えられて，それぞれにラベルづけ (犬，猫，羊...) を行いたい場合などである．
+例えば， SNS のプラットフォームで大量の画像が与えられて，それぞれの写真に何が写っているのかをラベルづけする，などのアプリケーションを想定できる．
 そのような場合は， <<big_dnn_inference>> のようなアーキテクチャが考えられるだろう．
 すなわち，大量のデータを複数のマシンで分割し，それぞれのマシンで推論の計算を行うというような構造である．
 
@@ -48,7 +49,7 @@ Docker とは， **コンテナ (Container)** と呼ばれる仮想環境下で�
 Docker を使うことで， OS を含めた全てのプログラムをコンパクトにパッケージングすることが可能になる (パッケージされたひとつの計算環境のことを **イメージ (Image) **と呼ぶ)．
 Dockerを使うことで，クラウドのサーバー上に瞬時に計算環境を複製することが可能になり，上で見たような複数の計算機を同時に走らせるためのシステムが実現できる．
 
-Docker は2013年に Solomon Hykes らを中心に開発された．
+Docker は2013年に Solomon Hykes らを中心に開発され，以降爆発的に普及し，クラウドコンピューティングだけでなく，機械学習・科学計算の文脈などで，欠かすことのできないソフトウェアとなった．
 概念としては， Docker は仮想マシン (Virtual machine; VM) にとても近い．
 ここでは， VM との対比をしながら，Docker とはなにかを簡単に説明しよう．
 
@@ -66,7 +67,7 @@ VM に対し， Docker ではハードウェアレベルの仮想化は行われ
 Docker で走る仮想 OS は，**多くの部分をホストのOSに依存しており，結果として非常にコンパクトである**．
 その結果， Docker で仮想 OS を起動するために要する時間は， VM に比べて圧倒的に早い．
 また， image のサイズも完全なOSよりも圧倒的に小さくなるので，ネットワークを通じたやり取りが非常に高速化される点も重要である．
-加えて， VM のいくつかの実装では，メタル (仮想化マシンではなく，物理的なハードウェアを使用した場合のこと) と比べ，ハイパーバイザーレイヤでのオーバーヘッドなどにより性能が低下することが知られているが， Docker ではメタルとほぼ同様の性能を引き出すことができるとされている．
+加えて， VM のいくつかの実装では，メタル (仮想化マシンに対して，物理的なハードウェアを使用した場合のこと) と比べ，ハイパーバイザーレイヤでのオーバーヘッドなどにより性能が低下することが知られているが， Docker ではメタルとほぼ同様の性能を引き出すことができるとされている．
 
 その他， VM との相違点などはたくさんあるのだが，ここではこれ以上詳細には立ち入らない．
 大事なのは， **Docker とはとても軽くてコンパクトな仮想計算環境を作るツールである**，という点である．
@@ -78,10 +79,123 @@ image::imgs/docker_vs_vm.png[docker_vs_vm, 700, align="center"]
 
 === Docker の使い方
 
+Docker とはなにかを理解するためには，実際に触って動かしてみるのが一番有効な手立てである．
+ここでは， Docker の簡単なチュートリアルを行う．
+
+Docker のインストールについては， <<environments>> および https://docs.docker.com/engine/install/[公式のドキュメンテーション] を参照してもらいたい．
+Docker のインストールが完了している前提で，以下は話を進めるものとする．
+
+==== Image をダウンロード
+
+パッケージ化された Docker の仮想環境 (**Image** と呼ぶ) は， https://hub.docker.com/[Docker Hub] からダウンロードできる．
+Docker Hub には，個人や会社・機関が作成した Docker Image が集められており， GitHub などと同じ感覚で，オープンな形で公開されている．
+
+例えば， Ubuntu 18.04 の Image は https://hub.docker.com/_/ubuntu[このリンク] で公開されており， `pull` コマンドを使うことでローカルにダウンロードすることができる．
+
+[source, bash]
 ----
-docker run -it ubuntu:18.04
+$ docker pull ubuntu:18.04
 ----
 
-Dockerfile
+[TIP]
+====
+Docker image を公開するためのデータベース (registry と呼ぶ) は Docker Hub だけではない．
+GitLab でも registry 機能は提供されているし，個人のサーバーで registry を立ち上げることも可能である．
+====
 
+==== Image を起動
+
+Pull してきた Image を起動するには， `run` コマンドを使う．
+
+[source, bash]
+----
+$ docker run -it ubuntu:18.04
+----
+
+ここで， `-it` とは，インタラクティブな shell のセッションを開始するために必要なオプションである．
+
+上のコマンドを実行すると，仮想化された Ubuntu が起動され，コマンドラインからコマンドが打ち込めるようになる (<<docker_shell>>)．
+
+[[docker_shell]]
+.Docker を使って ubuntu:18.04 イメージを起動
+image::imgs/docker_shell.png[docker_shell, 500, align="center"]
+
+ubuntu:18.04 は，空の Ubuntu OS だが，既にプログラムがインストール済みのものもある．
+これは， <<sec_handson02>> でみた DLAMI と概念として似ている．
+たとえば， pytorch がインストール済みの Image は https://hub.docker.com/r/pytorch/pytorch/[こちら] で公開されている．
+
+これを起動してみよう．
+
+[source. bash]
+----
+$ docker run -it pytorch/pytorch
+----
+
+[NOTE]
+====
+`docker run` をしたとき，ローカルに該当する Image がない場合は，自動的に Docker Hub からダウンロードがされる
+====
+
+pytorch の container が起動したら， Python のシェルを立ち上げて， pytorch をインポートしてみよう．
+
+[source, bash]
+----
+$ python3
+Python 3.7.7 (default, May  7 2020, 21:25:33)
+[GCC 7.3.0] :: Anaconda, Inc. on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import torch
+>>> torch.cuda.is_available()
+False
+----
+
+このように， Docker を使うことで簡単に特定のOS・プログラムの入った計算環境を再現することが可能になる．
+
+==== 自分だけの Image を作る
+
+自分の使うソフトウェア・ライブラリがインストールされた，自分だけの Image を作ることも可能である．
+
+例えば， https://gitlab.com/tomomano/intro-aws/container_registry[本講義で提供している docker image] には， Python, node.js, AWS CLI, AWS CDK などのソフトウェアがインストール済みであり，ダウンロードしてくるだけですぐにハンズオンのプログラムが実行できるようになっている．
+
+カスタムの docker image を作るには， `Dockerfile` と呼ばれるファイルを用意し，その中にどんなプログラムをインストールするかなどを記述していく．
+
+具体例として，本講義で提供している Docker image のレシピを見てみよう (https://gitlab.com/tomomano/intro-aws/-/tree/master/docker/Dockerfile[/docker/Dockerfile])．
+
+[source, docker]
+----
+FROM node:12
+
+# <1>
+RUN cd /opt \
+    && curl -q "https://www.python.org/ftp/python/3.7.6/Python-3.7.6.tgz" -o Python-3.7.6.tgz \
+    && tar -xzf Python-3.7.6.tgz \
+    && cd Python-3.7.6 \
+    && ./configure --enable-optimizations \
+    && make install
+
+RUN cd /opt \
+    && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
+    && unzip awscliv2.zip \
+    && ./aws/install
+
+# <2>
+RUN npm install -g aws-cdk@1.30
+
+# Make command line prettier...
+RUN echo "alias ls='ls --color=auto'" >> /root/.bashrc
+RUN echo "PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@aws-handson\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '" >> /root/.bashrc
+
+RUN mkdir -p /root/.ssh
+WORKDIR /root
+ENTRYPOINT ["/bin/bash"]
+----
+
+`Dockerfile` の中身の説明は特に行わないが，例えば上のコードで <1> で示したところは， Python 3.7 のインストールを実行している．
+また， <2> で示したところは， AWS CDK のインストールを行っていることがわかるだろう．
+
+このように，インストールのコマンドを逐一記述していくことで，自分だけの Docker image を作成することができる．
+一度 image を作成すれば，それを他人に渡すことで，他者も同一の計算環境を簡単に再構成することができる．
+
+"ぼくの環境ではそのプログラム走ったのにな..." というのは，プログラム初心者ではよく見かける会話だが， docker を使いこなせばそのような心配とは無縁である．
+そのような意味で，クラウド以外の場面でも， Docker の有用性・汎用性は極めて高い．
 
