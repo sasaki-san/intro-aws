@@ -14,6 +14,7 @@ class EcsClusterQaBot(core.Stack):
     def __init__(self, scope: core.App, name: str, **kwargs) -> None:
         super().__init__(scope, name, **kwargs)
 
+        # <1>
         # dynamoDB table to store questions and answers
         table = dynamodb.Table(
             self, "EcsClusterQaBot-Table",
@@ -24,16 +25,19 @@ class EcsClusterQaBot(core.Stack):
             removal_policy=core.RemovalPolicy.DESTROY
         )
 
+        # <2>
         vpc = ec2.Vpc(
             self, "EcsClusterQaBot-Vpc",
             max_azs=1,
         )
 
+        # <3>
         cluster = ecs.Cluster(
             self, "EcsClusterQaBot-Cluster",
             vpc=vpc,
         )
 
+        # <4>
         taskdef = ecs.FargateTaskDefinition(
             self, "EcsClusterQaBot-TaskDef",
             cpu=1024, # 1 CPU
@@ -50,6 +54,7 @@ class EcsClusterQaBot(core.Stack):
             )
         )
 
+        # <5>
         container = taskdef.add_container(
             "EcsClusterQaBot-Container",
             image=ecs.ContainerImage.from_registry(
