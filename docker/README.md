@@ -1,6 +1,6 @@
 # Docker image for hands-on
 
-This is a Docker image which contains libraries/softwares to run the hands-on programs.
+This is a Docker image which contains libraries/software to run the hands-on programs.
 
 The image is pre-installed with
 
@@ -15,10 +15,7 @@ The image is pre-installed with
 docker run -it registry.gitlab.com/tomomano/intro-aws:latest
 ```
 
-Once launched, download the latest hands-on code from GitLab:
+Once launched, you will find the hands-on source code in `~/intro-aws/handson/`.
+Then, `cd` into this directory, and run the programs.
 
-```bash
-git clone https://gitlab.com/tomomano/intro-aws.git
-```
-
-Then, `cd` into the `handson` directory, and run the programs. Have fun!
+Have fun!
