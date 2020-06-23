@@ -4,3 +4,4 @@
 
 * 勝俣敬寛 氏 (https://gitlab.com/takahiro_katsumata[@takahiro_katsumata]) - Docker イメージの作成
 * 香取真知子 氏 - ハンズオンプログラムの動作確認
+
