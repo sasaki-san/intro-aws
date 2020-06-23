@@ -3,4 +3,4 @@
 本原稿の執筆にあたり，以下の方々からの協力を得た．この場を借りて，感謝を表したい．
 
 * 勝俣敬寛 氏 (https://gitlab.com/takahiro_katsumata[@takahiro_katsumata]) - Docker イメージの作成
-
+* 香取真知子 氏 - ハンズオンプログラムの動作確認

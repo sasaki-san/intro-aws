@@ -37,6 +37,28 @@
 // .AWS Educate スクリーンショット2
 // image::imgs/aws_educate_account.png[AWS Educate, 600, align="center"]
 
+[[aws_secrets]]
+=== AWS のシークレットキーの作成
+
+AWS シークレットキーとは， AWS CLI や AWS CDK から AWS の API を操作する際に，ユーザー認証を行うための鍵のことである．
+AWS CLI/CDK を使うには，最初にシークレットキーを発行する必要がある．
+AWS シークレットキーの詳細は https://docs.aws.amazon.com/ja_jp/general/latest/gr/managing-aws-access-keys.html[公式ドキュメンテーション] を参照．
+
+. AWS コンソールにログインする．
+. 画面右上のアカウント名をクリックし，表示されるプルダウンメニューから "My Security Credentials" を選択 (<<aws_secret_key_1>>)
+. "Access keys for CLI, SDK, & API access" の下にある "Create accesss key" のボタンをクリックする (<<aws_secret_key_1>>)
+. 表示された Access key ID, Secret access key を記録しておく (画面を閉じると以降は表示されない)．
+. 鍵を忘れてしまった場合などは，何度でも発行が可能である．
+. 発行したシークレットキーは， `~/.aws/credentials` のファイルに書き込むか，環境変数に設定するなどして使う (詳しくは <<aws_cli_install>>)．
+
+[[aws_secret_key_1]]
+.AWS シークレットキーの発行1
+image::imgs/aws_secret_key_1.png[aws_secret_key_1, 400, align="center"]
+
+[[aws_secret_key_2]]
+.AWS シークレットキーの発行2
+image::imgs/aws_secret_key_2.png[aws_secret_key_2, 700, align="center"]
+
 [[aws_cli_install]]
 === AWS CLI のインストール
 

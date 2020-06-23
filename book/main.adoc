@@ -1,5 +1,5 @@
 = AWSによるクラウド入門
-Tomoyuki Mano <tomoyukimano@gmail.com>
+真野 智之 (Tomoyuki Mano) <tomoyukimano@gmail.com>
 v1.0, 2020-06-19
 :toc: left
 :sectnums:
