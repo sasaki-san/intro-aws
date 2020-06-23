@@ -87,7 +87,11 @@ $ aws --version
 $ aws configure
 ----
 
-コマンドを実行すると， `AWS Access Key ID`, `AWS Secret Access Key` を入力するよう指示される．これらの認証情報の取得については <<appendix_aws_account>> を参照．コマンドは加えて，`Default region name` を訊いてくる．ここには `ap-northeast-1` (東京リージョン)を指定するのがよい．最後の `Default output format` は `JSON` としておくとよい．
+コマンドを実行すると， `AWS Access Key ID`, `AWS Secret Access Key` を入力するよう指示される．
+シークレとキーの発行については <<aws_secrets>> を参照．
+コマンドは加えて，`Default region name` を訊いてくる．
+ここには `ap-northeast-1` (東京リージョン)を指定するのがよい．
+最後の `Default output format` は `JSON` としておくとよい．
 
 上記のコマンドを完了すると， `~/.aws/credentials` と `~/.aws/config`　という名前のファイルに設定が保存されているはずである．念の為，中身をしてみるとよい．
 
