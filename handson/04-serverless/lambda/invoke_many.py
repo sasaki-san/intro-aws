@@ -14,11 +14,12 @@ if __name__ == "__main__":
     # parse arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("function_name", type=str)
+    parser.add_argument("num_tasks", type=int)
     args = parser.parse_args()
 
     # submit 100 tasks
     with Pool(cpu_count()) as p:
-        params = [(args.function_name, i) for i in range(100)]
+        params = [(args.function_name, i) for i in range(args.num_tasks)]
         p.map(invoke, params)
 
     print("\nSubmitted 100 tasks to Lambda!")
