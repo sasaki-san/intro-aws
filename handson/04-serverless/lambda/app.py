@@ -4,6 +4,7 @@ from aws_cdk import (
 )
 import os
 
+# <1>
 FUNC = """
 import time
 from random import choice, randint
@@ -20,6 +21,7 @@ class SimpleLambda(core.Stack):
     def __init__(self, scope: core.App, name: str, **kwargs) -> None:
         super().__init__(scope, name, **kwargs)
 
+        # <2>
         handler = _lambda.Function(
             self, 'LambdaHandler',
             runtime=_lambda.Runtime.PYTHON_3_7,

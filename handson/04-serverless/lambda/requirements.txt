@@ -1,7 +1,2 @@
-aws-cdk.aws-ec2==1.30.0
-aws-cdk.aws-ecs==1.30.0
-aws-cdk.aws-dynamodb==1.30.0
 aws-cdk.aws-lambda==1.30.0
-aws-cdk.aws-apigateway==1.30.0
 boto3
-requests
