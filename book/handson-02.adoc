@@ -3,7 +3,13 @@
 
 ハンズオン第二回では，GPUを搭載したEC2インスタンスを起動し，ディープラーニングの学習と推論を実行する演習を行う．
 
-ハンズオンのソースコードはこちらのリンクに置いてある => https://gitlab.com/tomomano/intro-aws/handson/02-ec2-dnn
+ハンズオンのソースコードはこちらのリンクに置いてある => https://gitlab.com/tomomano/intro-aws/-/tree/master/handson/02-ec2-dnn
+
+[WARNING]
+====
+このハンズオンは，AWSの無料枠内では実行できない．
+`g4dn.xlarge` タイプの EC2 インスタンスを使うので， `ap-northeast-1` リージョンでは 0.8 $/hour のコストが発生する．
+====
 
 === 準備
 
@@ -308,7 +314,7 @@ Caffe2 は 2018年に PyTorch プロジェクトに合併された．
 PyTorch には，開発統合前から Chainer からインスパイアされた API がいくつもあり， Chainer の DNA は今も PyTorch に引き継がれているのである...!
 ====
 
-本格的なディープラーニングの計算に移る前に， PyTorch ライブラリを少し触ってみよう．
+本格的なディープラーニングの計算に移る前に， PyTorch ライブラリを使って， GPU で計算を行うとはどういうものか，その入り口に触れてみよう．
 
 まずは，新しいノートブックを作成する．
 Jupyterのホーム画面の右上の "New" を押し，"conda_pytorch_p36" という環境を選択した上で，新規ノートブックを作成する (<<handson_02_jupyeter_new>>)．

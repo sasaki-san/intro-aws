@@ -29,6 +29,13 @@ class EcsClusterQaBot(core.Stack):
         vpc = ec2.Vpc(
             self, "EcsClusterQaBot-Vpc",
             max_azs=1,
+            subnet_configuration=[
+                ec2.SubnetConfiguration(
+                    name="public",
+                    subnet_type=ec2.SubnetType.PUBLIC,
+                )
+            ],
+            nat_gateways=0,
         )
 
         # <3>
