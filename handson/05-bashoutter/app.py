@@ -69,7 +69,11 @@ class Bashoutter(core.Stack):
         # <4>
         # define API Gateway
         api = apigw.RestApi(
-            self, "BashoutterApi"
+            self, "BashoutterApi",
+            default_cors_preflight_options=apigw.CorsOptions(
+                allow_origins=apigw.Cors.ALL_ORIGINS,
+                allow_methods=apigw.Cors.ALL_METHODS,
+            )
         )
 
         haiku = api.root.add_resource("haiku")

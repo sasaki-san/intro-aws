@@ -5,6 +5,10 @@ import boto3
 ddb = boto3.resource("dynamodb")
 table = ddb.Table(os.environ["TABLE_NAME"])
 
+HEADERS = {
+    "Access-Control-Allow-Origin": "*",
+}
+
 # this custom class is to handle decimal.Decimal objects in json.dumps()
 class DecimalEncoder(json.JSONEncoder):
     def default(self, o):
@@ -26,6 +30,7 @@ def get_haiku(event, context):
         resp = {"description": f"Internal server error. {str(e)}"}
     return {
         "statusCode": status_code,
+        "headers": HEADERS,
         "body": json.dumps(resp, cls=DecimalEncoder)
     }
 
@@ -38,6 +43,10 @@ def post_haiku(event, context):
         if not body:
             raise ValueError("Invalid request. The request body is missing!")
         body = json.loads(body)
+
+        for key in ["username", "first", "second", "third"]:
+            if not body.get(key):
+                raise ValueError(f"{key} is empty")
 
         item = {
             "item_id": uuid.uuid4().hex,
@@ -60,6 +69,7 @@ def post_haiku(event, context):
         resp = {"description": str(e)}
     return {
         "statusCode": status_code,
+        "headers": HEADERS,
         "body": json.dumps(resp)
     }
 
@@ -91,6 +101,7 @@ def patch_haiku(event, context):
         resp = {"description": str(e)}
     return {
         "statusCode": status_code,
+        "headers": HEADERS,
         "body": json.dumps(resp)
     }
 
@@ -118,5 +129,6 @@ def delete_haiku(event, context):
         resp = {"description": str(e)}
     return {
         "statusCode": status_code,
+        "headers": HEADERS,
         "body": json.dumps(resp)
     }
