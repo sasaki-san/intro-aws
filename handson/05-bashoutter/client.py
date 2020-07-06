@@ -49,7 +49,7 @@ if __name__ == "__main__":
     subparsers = parser.add_subparsers(dest="command")
 
     sp1 = subparsers.add_parser("post_many")
-    sp1.add_argument("num", type=str)
+    sp1.add_argument("num", type=int)
 
     sp2 = subparsers.add_parser("clear_database")
 

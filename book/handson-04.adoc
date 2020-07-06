@@ -419,3 +419,26 @@ table.scan().get("Items")
 
 ==== 大量のデータの読み書き
 
+DynamoDB の利点は，最初に述べた通り，負荷に応じて自在にその処理能力を拡大できる点である．
+
+そこで，ここでは一度に大量のデータを書き込む場合をシミュレートしてみよう．
+https://gitlab.com/tomomano/intro-aws/-/tree/master/handson/04-serverless/dynamodb/batch_rw.py[batch_rw.py] に，一度に大量の書き込みを実行するためのプログラムが書いてある．
+
+次のコマンドを実行してみよう (XXXX は自分のテーブルの名前に置き換える)．
+
+[source, bash]
+----
+$ python batch_rw.py XXXX write 1000
+----
+
+このコマンドを実行することで，ランダムなデータが1000個データベースに書き込まれる．
+
+さらに，データベースの検索をかけてみよう．
+今回書き込んだデータには `age` という属性に1から50のランダムな整数が割り当てられている．
+`age` が2以下であるような要素だけを拾ってくるには，以下のコマンドを実行すればよい．
+
+[source, bash]
+----
+$ python batch_rw.py XXXX search_under_age 2
+----
+
