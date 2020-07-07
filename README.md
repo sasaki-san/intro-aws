@@ -8,12 +8,14 @@
 - テキスト(PDF版)はこちら https://tomomano.gitlab.io/intro-aws/main.pdf
 - ハンズオンで使用するプログラム => [handson/](handson/)
 
-文章の誤りやソースコードのバグを発見した場合は， [Issues](https://gitlab.com/tomomano/intro-aws/-/issues) にご投稿ください🐛🐛
+**レポート課題は[こちら](report.md)**
 
 ## 更新履歴
 
 - 2020/05/24 - GitLab開設
 - 2020/06/24 - 第一回講義
+- 2020/07/01 - 第二回講義
+- 2020/07/08 - 第三回講義
 
 ## ライセンス
 
