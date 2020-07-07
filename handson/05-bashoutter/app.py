@@ -54,6 +54,7 @@ class Bashoutter(core.Stack):
             code=_lambda.Code.from_asset("api"),
             handler="api.get_haiku",
             memory_size=512,
+            timeout=core.Duration.seconds(10),
             **common_params,
         )
         post_haiku_lambda = _lambda.Function(
