@@ -1,6 +1,8 @@
 from aws_cdk import (
     core,
     aws_dynamodb as ddb,
+    aws_s3 as s3,
+    aws_s3_deployment as s3_deploy,
     aws_lambda as _lambda,
     aws_ssm as ssm,
     aws_apigateway as apigw,
@@ -24,6 +26,20 @@ class Bashoutter(core.Stack):
             removal_policy=core.RemovalPolicy.DESTROY
         )
 
+        # <2>
+        bucket = s3.Bucket(
+            self, "Bashoutter-Bucket",
+            website_index_document="index.html",
+            public_read_access=True,
+            removal_policy=core.RemovalPolicy.DESTROY
+        )
+        s3_deploy.BucketDeployment(
+            self, "BucketDeployment",
+            destination_bucket=bucket,
+            sources=[s3_deploy.Source.asset("./gui/dist")],
+            retain_on_delete=False,
+        )
+
         common_params = {
             "runtime": _lambda.Runtime.PYTHON_3_7,
             "environment": {
@@ -31,13 +47,14 @@ class Bashoutter(core.Stack):
             }
         }
 
-        # <2>
+        # <3>
         # define Lambda functions
         get_haiku_lambda = _lambda.Function(
             self, "GetHaiku",
             code=_lambda.Code.from_asset("api"),
             handler="api.get_haiku",
             memory_size=512,
+            timeout=core.Duration.seconds(10),
             **common_params,
         )
         post_haiku_lambda = _lambda.Function(
@@ -59,17 +76,21 @@ class Bashoutter(core.Stack):
             **common_params,
         )
 
-        # <3>
+        # <4>
         # grant permissions
         table.grant_read_write_data(get_haiku_lambda)
         table.grant_read_write_data(post_haiku_lambda)
         table.grant_read_write_data(patch_haiku_lambda)
         table.grant_read_write_data(delete_haiku_lambda)
 
-        # <4>
+        # <5>
         # define API Gateway
         api = apigw.RestApi(
-            self, "BashoutterApi"
+            self, "BashoutterApi",
+            default_cors_preflight_options=apigw.CorsOptions(
+                allow_origins=apigw.Cors.ALL_ORIGINS,
+                allow_methods=apigw.Cors.ALL_METHODS,
+            )
         )
 
         haiku = api.root.add_resource("haiku")
@@ -103,6 +124,9 @@ class Bashoutter(core.Stack):
             parameter_name="ENDPOINT_URL",
             string_value=api.url
         )
+
+        # Output parameters
+        core.CfnOutput(self, 'BucketUrl', value=bucket.bucket_website_domain_name)
 
 app = core.App()
 Bashoutter(

@@ -164,17 +164,17 @@ $ npm install -g aws-cdk@1.30
 $ cdk --version
 ----
 
-// インストールができたら，以下のコマンドによりAWS側の初期設定を行う．これは一度実行すればOK．
+インストールができたら，以下のコマンドによりAWS側の初期設定を行う．これは一度実行すればOK．
 
-// [source, bash]
-// ----
-// $ cdk bootstrap
-// ----
+[source, bash]
+----
+$ cdk bootstrap
+----
 
-// [NOTE]
-// ====
-// `cdk bootstrap` を実行するときは，AWSの認証情報とリージョンが正しく設定されていることを確認する．デフォルトでは `~/.aws/config` にあるデフォルトのプロファイルが使用される．デフォルト以外のプロファイルを用いるときは `AWS_ACCESS_KEY_ID` などの環境変数を設定する (https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html[参照])．
-// ====
+[NOTE]
+====
+`cdk bootstrap` を実行するときは，AWSの認証情報とリージョンが正しく設定されていることを確認する．デフォルトでは `~/.aws/config` にあるデフォルトのプロファイルが使用される．デフォルト以外のプロファイルを用いるときは `AWS_ACCESS_KEY_ID` などの環境変数を設定する (https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html[参照])．
+====
 
 [NOTE]
 ====
