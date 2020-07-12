@@ -1,4 +1,4 @@
-# build docker image with Python, node.js, AWS CLI, AWS CDK etc. 
+# build docker image with Python, Node.js, AWS CLI, AWS CDK etc.
 docker:
   image: docker:19.03.11
   stage: build

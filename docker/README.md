@@ -5,7 +5,7 @@ This is a Docker image which contains libraries/software to run the hands-on pro
 The image is pre-installed with
 
 - Python 3.7
-- node.js 12.0
+- Node.js 12.0
 - AWS CLI
 - AWS CDK
 
