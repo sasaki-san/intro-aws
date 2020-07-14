@@ -125,13 +125,13 @@ Linux/Mac/Windowsのインストール法については https://docs.docker.com
 https://docs.docker.com/docker-for-windows/install-windows-home/[こちらのドキュメンテーションを参照]
 のこと．
 * **Python** (Version 3.6以上)
-* **node.js** (version 10.0以上)
+* **Node.js** (version 10.0以上)
 * **AWS CLI** (インストールについては <<aws_cli_install>> 参照)
 * **AWS CDK** (インストールについては <<aws_cdk_install>> 参照)
 
 ==== ハンズオン実行用の Docker Image
 
-Python, node.js, AWS CDK など，ハンズオンのプログラムを実行するために必要なプログラム/ライブラリがインストール済みの Docker image を用意した．
+Python, Node.js, AWS CDK など，ハンズオンのプログラムを実行するために必要なプログラム/ライブラリがインストール済みの Docker image を用意した．
 また，ハンズオンのソースコードもクローン済みである．
 Docker の使い方を知っている読者は，これを使えば，諸々のインストールをする必要なく，すぐにハンズオンのプログラムを実行できる．
 

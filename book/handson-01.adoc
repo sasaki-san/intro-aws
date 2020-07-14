@@ -21,9 +21,9 @@
 ハンズオンを実行するには個人のAWSアカウントが必要である．
 AWSアカウントの取得については <<aws_account>> 参照．
 
-==== Python と node.js
+==== Python と Node.js
 
-本ハンズオンを実行するには，Python (3.6 以上)，node.js (10.3.0 以上) がインストールされていなければならない．
+本ハンズオンを実行するには，Python (3.6 以上)，Node.js (10.3.0 以上) がインストールされていなければならない．
 
 ==== AWS CLI
 
@@ -46,7 +46,7 @@ $ git clone https://gitlab.com/tomomano/intro-aws.git
 
 ==== Docker を使用する場合
 
-Python, node.js, AWS CDK など，ハンズオンのプログラムを実行するために必要なプログラム/ライブラリがインストール済みの Docker image を用意した．
+Python, Node.js, AWS CDK など，ハンズオンのプログラムを実行するために必要なプログラム/ライブラリがインストール済みの Docker image を用意した．
 また，ハンズオンのソースコードもクローン済みである．
 Docker の使い方を知っている読者は，これを使えば，諸々のインストールをする必要なく，すぐにハンズオンのプログラムを実行できる．
 
@@ -471,9 +471,9 @@ Cpu(s):  0.3%us,  0.3%sy,  0.1%ni, 98.9%id,  0.2%wa,  0.0%hi,  0.0%si,  0.2%st
 Mem:   1009140k total,   270760k used,   738380k free,    14340k buffers
 Swap:        0k total,        0k used,        0k free,   185856k cached
 
-  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND                                                           
-    1 root      20   0 19696 2596 2268 S  0.0  0.3   0:01.21 init                                                              
-    2 root      20   0     0    0    0 S  0.0  0.0   0:00.00 kthreadd                                                          
+  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+    1 root      20   0 19696 2596 2268 S  0.0  0.3   0:01.21 init
+    2 root      20   0     0    0    0 S  0.0  0.0   0:00.00 kthreadd
     3 root      20   0     0    0    0 I  0.0  0.0   0:00.00 kworker/0:0
 ----
 
