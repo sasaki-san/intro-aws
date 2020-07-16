@@ -2,26 +2,6 @@
 
 **For the full step-by-step tutorial, see https://tomomano.gitlab.io/intro-aws**
 
-## Prerequisites
-
-- Python (>= 3.7)
-- AWS Account
-- [AWS CLI](https://aws.amazon.com/cli/)
-  - See [this link](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2-linux.html) to install
-  - Once installed, run `aws configure`. For more information, see [this link](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html).
-- [AWS CDK](https://github.com/aws/aws-cdk)
-  - See [this link](https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html) to install
-    * To install CDK, you need `node.js` and `npm`.
-       * [Installation instruction](https://github.com/nodesource/distributions/blob/master/README.md)
-       * `node.js` version must be >=10.0
-    * Once node.js and npm is installed, then you can install `cdk` with this command:
-
-       `sudo npm install -g aws-cdk`
-
-    * To start using CDK, you must run
-
-        `cdk bootstrap`
-
 ## Installation
 
 Create a new python `virtual environment`:
