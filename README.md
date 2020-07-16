@@ -16,6 +16,17 @@
 - 2020/06/24 - 第一回講義
 - 2020/07/01 - 第二回講義
 - 2020/07/08 - 第三回講義
+- 2020/07/12 - Twitter などのメディアで多くの反響を頂いているようです
+(
+[1](https://twitter.com/shion_honda/status/1281572631544655872?s=20),
+[2](https://twitter.com/kabuakan/status/1281837309101391872?s=20),
+[3](https://b.hatena.ne.jp/entry?url=https%3A%2F%2Ftomomano.gitlab.io%2Fintro-aws%2F)
+)
+どうもありがとうございます🙇🙇‍気に入っていただいた場合はスターをいただけるとありがたいです．
+  
+  締切のある中で作ったので，表現の誤り・誤植・プログラムのバグなどあるかもしれません．
+  その場合は [Issues](https://gitlab.com/tomomano/intro-aws/-/issues) までご報告いただけると幸いです．継続的にアップデートを行っていきたいと思います．
+
 
 ## ライセンス
 

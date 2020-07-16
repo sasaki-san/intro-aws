@@ -59,8 +59,8 @@ class SimpleLambda(core.Stack):
 <2> 次に， Lambda の関数の諸々のパラメータを設定している．
 それぞれのパラメータの意味は，文字通りの意味なので明瞭であるが，以下に解説する．
 * `runtime=_lambda.Runtime.PYTHON_3_7`:
-ここでは， Python3.7 を使って上記で定義された関数を実行せよ，と指定している． 
-Python3.7 の他に， node.js, Java, Ruby, Go などの言語を指定することが可能である．
+ここでは， Python3.7 を使って上記で定義された関数を実行せよ，と指定している．
+Python3.7 の他に， Node.js, Java, Ruby, Go などの言語を指定することが可能である．
 * `code=_lambda.Code.from_inline(FUNC)`:
 実行されるべき関数が書かれたコードを指定する．
 ここでは， `FUNC=...` で定義した文字列を渡しているが，文字列以外にもファイルのパスを渡すことも可能である．
