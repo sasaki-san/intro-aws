@@ -142,7 +142,7 @@ class Bashoutter(core.Stack):
 
         # <4>
         # grant permissions
-        table.grant_read_write_data(get_haiku_lambda)
+        table.grant_read_data(get_haiku_lambda)
         table.grant_read_write_data(post_haiku_lambda)
         table.grant_read_write_data(patch_haiku_lambda)
         table.grant_read_write_data(delete_haiku_lambda)
@@ -316,7 +316,7 @@ DynamoDB の `scan()` メソッドは，最大で 1MB までのデータしか�
 
 [source, python, linenums]
 ----
-table.grant_read_write_data(get_haiku_lambda)
+table.grant_read_data(get_haiku_lambda)
 table.grant_read_write_data(post_haiku_lambda)
 table.grant_read_write_data(patch_haiku_lambda)
 table.grant_read_write_data(delete_haiku_lambda)
@@ -324,9 +324,17 @@ table.grant_read_write_data(delete_haiku_lambda)
 
 これまでは説明の簡略化のため敢えて触れてこなかったが， AWS には https://aws.amazon.com/iam/[IAM (Identity and Access Management] という重要な概念がある．
 IAM は基本的に，あるリソースが他のリソースに対してどのような権限を持っているか，を規定するものである．
-例えば， Lambda 関数が DynamoDB のデータを読み書きするためには，それを許可するような IAM が Lambda 関数に付与されていなければならない．
+Lambdaは，デフォルトの状態では他のリソースにアクセスする権限をなにも有していない．
+したがって， Lambda 関数が DynamoDB のデータを読み書きするためには，それを許可するような IAM が Lambda 関数に付与されていなければならない．
 
 CDK による `dynamodb.Table` オブジェクトには `grant_read_write_data()` という便利なメソッドが備わっており，アクセスを許可したい Lambda 関数を引数としてこのメソッドを呼ぶことで，データベースへの読み書きを許可する IAM を付与することができる．
+
+[TIP]
+====
+Lambda に付与する IAM は，**必要最低限の権限を与えるにとどめる**というのが基本方針である．
+これにより，セキュリティを向上させるだけでなく，意図していないプログラムからのデータベースへの読み書きを防止するという点で，バグを未然に防ぐことができる．
+そのような理由により，上のコードでは `GET` のハンドラー関数に対しては `grant_read_data()` によって， read 権限のみを付与している．
+====
 
 ==== API Gateway
 

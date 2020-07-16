@@ -194,7 +194,7 @@ image::imgs/handson-04/lambda_console_monitoring.png[lambda_console_monitoring, 
 [TIP]
 ====
 興味がある人は，一気に1000個などのジョブを投入してみると良い．
-が，あまりやるすぎると Lambda の無料利用枠を超えて料金が発生してしまうので注意．
+が，あまりやりすぎると Lambda の無料利用枠を超えて料金が発生してしまうので注意．
 ====
 
 ==== スタックの削除
