@@ -322,17 +322,18 @@ table.grant_read_write_data(patch_haiku_lambda)
 table.grant_read_write_data(delete_haiku_lambda)
 ----
 
-これまでは説明の簡略化のため敢えて触れてこなかったが， AWS には https://aws.amazon.com/iam/[IAM (Identity and Access Management] という重要な概念がある．
+これまでは説明の簡略化のため敢えて触れてこなかったが， AWS には https://aws.amazon.com/iam/[IAM (Identity and Access Management)] という重要な概念がある．
 IAM は基本的に，あるリソースが他のリソースに対してどのような権限を持っているか，を規定するものである．
 Lambdaは，デフォルトの状態では他のリソースにアクセスする権限をなにも有していない．
 したがって， Lambda 関数が DynamoDB のデータを読み書きするためには，それを許可するような IAM が Lambda 関数に付与されていなければならない．
 
 CDK による `dynamodb.Table` オブジェクトには `grant_read_write_data()` という便利なメソッドが備わっており，アクセスを許可したい Lambda 関数を引数としてこのメソッドを呼ぶことで，データベースへの読み書きを許可する IAM を付与することができる．
 
-[TIP]
+[NOTE]
 ====
-Lambda に付与する IAM は，**必要最低限の権限を与えるにとどめる**というのが基本方針である．
+各リソースに付与する IAM は，**必要最低限の権限を与えるにとどめる**というのが基本方針である．
 これにより，セキュリティを向上させるだけでなく，意図していないプログラムからのデータベースへの読み書きを防止するという点で，バグを未然に防ぐことができる．
+
 そのような理由により，上のコードでは `GET` のハンドラー関数に対しては `grant_read_data()` によって， read 権限のみを付与している．
 ====
 
@@ -344,7 +345,7 @@ https://aws.amazon.com/api-gateway/[API Gateway] とは， API の"入り口"と
 すなわち， API のリクエストが来たときのみ起動し，API が来ていない間は完全にシャットダウンしている．
 一方で，アクセスが大量に来た場合はそれに比例してルーティングの処理能力を増大してくれる．
 
-API Gateway を配置することで，大量 (１秒間に数千から数万件)の API リクエストに対応することのできるシステムを容易に構築することができる．
+API Gateway を配置することで，大量　(1秒間に数千から数万件) の API リクエストに対応することのできるシステムを容易に構築することができる．
 API Gateway の料金は <<tab_handson_05_apigateway_price>> のように設定されている．
 また，無料利用枠により，月ごとに100万件までのリクエストは0円で使用できる．
 
@@ -417,7 +418,7 @@ haiku_item_id.add_method(
 [TIP]
 ====
 API Gateway で新規 API を作成したとき， `default_cors_preflight_options=` というパラメータで https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS[Cross Origin Resource Sharing (CORS)] の設定を行っている．
-これは， GUI アプリケーションと API を接続する際に必要な設定である．
+これは，ブラウザで走る Web アプリケーションと API を接続する際に必要な設定である．
 興味のある読者は各自 CORS について調べてもらいたい．
 ====
 
