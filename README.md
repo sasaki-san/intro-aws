@@ -20,7 +20,8 @@
 (
 [1](https://twitter.com/shion_honda/status/1281572631544655872?s=20),
 [2](https://twitter.com/kabuakan/status/1281837309101391872?s=20),
-[3](https://b.hatena.ne.jp/entry?url=https%3A%2F%2Ftomomano.gitlab.io%2Fintro-aws%2F)
+[3](https://b.hatena.ne.jp/entry?url=https%3A%2F%2Ftomomano.gitlab.io%2Fintro-aws%2F),
+[4](https://twitter.com/coffee_nomimasu/status/1284690504056111105?s=20)
 )
 どうもありがとうございます🙇🙇‍気に入っていただいた場合はスターをいただけるとありがたいです．
   
